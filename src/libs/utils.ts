@@ -65,8 +65,8 @@ export const groupIntoPairs = <T>(array: T[], groupSize: number = 2): T[][] => {
 };
 
 export function getTokenFromUrl(): string | null {
-  const hash = window.location.hash;
-  const params = new URLSearchParams(hash.split('?')[1] || '');
+  const location = window.location.href;
+  const params = new URLSearchParams(location.split('?')[1] || '');
   return params.get('token');
 }
 

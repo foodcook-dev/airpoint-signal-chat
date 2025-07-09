@@ -10,7 +10,6 @@ export const useSignalHandler = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollTriggerRef = useRef<() => void>(null);
   const [inputValue, setInputValue] = useState<string>('');
-  const [isPushEnabled, setIsPushEnabled] = useState<boolean>(false);
   const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -162,10 +161,8 @@ export const useSignalHandler = () => {
     messageList,
     inputValue,
     selectedImages,
-    isPushEnabled,
     isSubmitting,
     setInputValue,
-    setIsPushEnabled,
     handleSendMessage,
     handleDeleteMessage,
     handleImageSelect,

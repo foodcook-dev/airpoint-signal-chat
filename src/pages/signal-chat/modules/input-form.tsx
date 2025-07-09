@@ -1,6 +1,5 @@
 import { Send, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { ChatInput } from '@/components/ui/chat/chat-input';
 import ImagePreview from './image-preview';
 import { CHAT_CONSTANTS } from '../constants';
@@ -11,7 +10,6 @@ interface InputFormProps {
     url: string;
     name: string;
   }>;
-  isPushEnabled: boolean;
   isSubmitting: boolean;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   onInputChange: (value: string) => void;
@@ -19,13 +17,11 @@ interface InputFormProps {
   onImageSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onImageRemove: (index: number) => void;
   onImageButtonClick: () => void;
-  onPushEnabledChange: (checked: boolean) => void;
 }
 
 export default function InputForm({
   inputValue,
   selectedImages,
-  isPushEnabled,
   isSubmitting,
   fileInputRef,
   onInputChange,
@@ -33,24 +29,23 @@ export default function InputForm({
   onImageSelect,
   onImageRemove,
   onImageButtonClick,
-  onPushEnabledChange,
 }: InputFormProps) {
   return (
-    <div className="flex-shrink-0 p-4 bg-white/90">
+    <div className="flex-shrink-0 p-4 bg-background/90 backdrop-blur-sm">
       <form
         onSubmit={onSubmit}
-        className="rounded-lg border border-gray-300 focus-within:ring-1 focus-within:ring-blue-500 p-1"
+        className="rounded-lg border border-gray-300 dark:border-gray-500 focus-within:ring-1 focus-within:ring-blue-500 p-1"
       >
         <ImagePreview images={selectedImages} onRemove={onImageRemove} />
 
         <ChatInput
           placeholder="내용을 작성하세요."
-          className="min-h-16 resize-none bg-background border-0 p-2 shadow-none focus-visible:ring-0"
+          className="min-h-16 resize-none bg-background border-0 p-2 shadow-none focus-visible:ring-0 text-foreground placeholder:text-muted-foreground"
           value={inputValue}
           onChange={(e) => onInputChange(e.target.value)}
         />
 
-        <div className="flex items-center border-t border-t-gray-300 justify-between p-3">
+        <div className="flex items-center border-t border-gray-300 dark:border-gray-500 justify-between p-3">
           <div className="flex items-center gap-2">
             <input
               ref={fileInputRef}
@@ -63,7 +58,7 @@ export default function InputForm({
             <Button
               type="button"
               onClick={onImageButtonClick}
-              className="gap-1.5 hover:bg-gray-100"
+              className="gap-1.5 hover:bg-accent text-foreground"
               disabled={isSubmitting}
             >
               <ImageIcon className="size-4" />
@@ -72,11 +67,6 @@ export default function InputForm({
           </div>
 
           <div className="flex items-center gap-3">
-            <Checkbox
-              checked={isPushEnabled}
-              onChange={(e) => onPushEnabledChange(e.target.checked)}
-              label="푸시 알림 발송"
-            />
             <Button
               type="submit"
               className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-xs"

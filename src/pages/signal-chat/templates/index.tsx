@@ -10,11 +10,9 @@ export default function SignalChat() {
     scrollTriggerRef,
     inputValue,
     selectedImages,
-    isPushEnabled,
     isSubmitting,
     messageList,
     setInputValue,
-    setIsPushEnabled,
     handleSendMessage,
     handleDeleteMessage,
     handleImageSelect,
@@ -26,7 +24,7 @@ export default function SignalChat() {
   } = useSignalHandler();
 
   return (
-    <div className="w-[100vw] flex flex-col h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="w-[100vw] flex flex-col h-screen bg-background">
       <SignalHeader />
       <div className="flex-1 overflow-hidden">
         <ChatMessageList
@@ -46,7 +44,6 @@ export default function SignalChat() {
       <InputForm
         inputValue={inputValue}
         selectedImages={selectedImages}
-        isPushEnabled={isPushEnabled}
         isSubmitting={isSubmitting}
         fileInputRef={fileInputRef}
         onInputChange={setInputValue}
@@ -54,7 +51,6 @@ export default function SignalChat() {
         onImageSelect={handleImageSelect}
         onImageRemove={handleImageRemove}
         onImageButtonClick={handleImageButtonClick}
-        onPushEnabledChange={setIsPushEnabled}
       />
     </div>
   );

@@ -7,7 +7,6 @@ import MessageLoading from './message-loading';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { format } from 'date-fns';
 
-// ChatBubble
 const chatBubbleVariant = cva('flex gap-3 max-w-[90%] items-end relative group mb-4', {
   variants: {
     variant: {
@@ -57,9 +56,9 @@ interface ChatBubbleAvatarProps {
 }
 
 const ChatBubbleAvatar: React.FC<ChatBubbleAvatarProps> = ({ src, className }) => (
-  <Avatar className={cn('w-11 h-11 border-2 border-white shadow-sm', className)}>
+  <Avatar className={cn('w-11 h-11 shadow-sm', className)}>
     <AvatarImage src={src} alt="Avatar" />
-    <AvatarFallback className="text-xs font-medium bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+    <AvatarFallback className="text-xs font-medium bg-gradient-to-br from-blue-500 to-purple-600 text-white dark:from-blue-600 dark:to-purple-700">
       <Bell className="text-white w-5 h-5" />
     </AvatarFallback>
   </Avatar>
@@ -69,12 +68,13 @@ const ChatBubbleAvatar: React.FC<ChatBubbleAvatarProps> = ({ src, className }) =
 const chatBubbleMessageVariants = cva('px-4 py-3 shadow-sm backdrop-blur-sm', {
   variants: {
     variant: {
-      received: 'bg-white/90 text-gray-800 rounded-2xl rounded-br-md border border-gray-200/50',
-      sent: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl rounded-br-md shadow-md',
+      received:
+        'rounded-2xl rounded-br-md shadow-md bg-gray-100 text-gray-800 dark:bg-[rgb(35,45,67)] dark:text-gray-100',
+      sent: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl rounded-br-md shadow-md dark:from-blue-600 dark:to-blue-700',
     },
     layout: {
       default: '',
-      ai: 'border-t w-full rounded-none bg-transparent',
+      ai: 'w-full rounded-none bg-gray-50 dark:bg-[rgb(30,40,62)]',
     },
   },
   defaultVariants: {
@@ -143,7 +143,7 @@ const ChatBubbleAction: React.FC<ChatBubbleActionProps> = ({
   <Button
     variant={variant}
     size={size}
-    className={cn('h-8 w-8 hover:bg-gray-100 rounded-md transition-colors', className)}
+    className={cn('h-8 w-8 hover:bg-accent rounded-md transition-colors', className)}
     onClick={onClick}
     {...props}
   >
@@ -169,7 +169,8 @@ const ChatBubbleActionWrapper = React.forwardRef<HTMLDivElement, ChatBubbleActio
       )}
       {...props}
     >
-      <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200/50 p-1 flex gap-1">
+      {' '}
+      <div className="bg-background/90 text-gray-100 backdrop-blur-sm rounded-lg shadow-lg border border-border/50 p-1 flex gap-1 dark:bg-[rgb(35,45,67)]/90 dark:border-[rgb(45,55,77)]/50">
         {children}
       </div>
     </div>
