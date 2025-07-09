@@ -2,7 +2,7 @@ import { Send, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ChatInput } from '@/components/ui/chat/chat-input';
-import ImagePreview from './ImagePreview';
+import ImagePreview from './image-preview';
 import { CHAT_CONSTANTS } from '../constants';
 
 interface InputFormProps {

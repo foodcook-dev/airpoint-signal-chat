@@ -7,8 +7,8 @@ import {
   ChatBubbleAction,
   ChatBubbleActionWrapper,
 } from '@/components/ui/chat/chat-bubble';
-import OGTag from './OGTag';
-import ContentImages from './ContentImages';
+import OGTag from './og-tag';
+import ContentImages from './content-images';
 
 interface SignalMessageProps {
   chat: {
@@ -30,7 +30,7 @@ interface SignalMessageProps {
 export default function SignalMessage({ chat, onDelete }: SignalMessageProps) {
   return (
     <ChatBubble key={chat.id} variant="sent">
-      <ChatBubbleAvatar fallback="Admin" />
+      <ChatBubbleAvatar />
       <div className="flex flex-col space-y-2">
         <div className="items-end flex flex-col space-y-2">
           <ChatBubbleMessage>

@@ -6,6 +6,7 @@ export default function Root() {
     <Routes>
       {/* <Route element={<BaseLayout />}> */}
       <Route path="/" element={<SignalChat />} />
+      <Route path="/chat" element={<SignalChat />} />
       {/* </Route> */}
     </Routes>
   );

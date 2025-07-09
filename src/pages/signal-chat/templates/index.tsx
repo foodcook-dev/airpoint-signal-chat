@@ -1,8 +1,8 @@
 import { ChatMessageList } from '@/components/ui/chat/chat-message-list';
 import { useSignalHandler } from '@/pages/signal-chat/hooks/useSignalHandler';
-import SignalHeader from '../modules/SignalHeader';
-import SignalMessage from '../modules/SignalMessage';
-import InputForm from '../modules/InputForm';
+import SignalHeader from '../modules/signal-header';
+import SignalMessage from '../modules/signal-message';
+import InputForm from '../modules/input-form';
 
 export default function SignalChat() {
   const {

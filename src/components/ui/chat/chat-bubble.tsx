@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Bell } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/libs/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -55,11 +56,11 @@ interface ChatBubbleAvatarProps {
   className?: string;
 }
 
-const ChatBubbleAvatar: React.FC<ChatBubbleAvatarProps> = ({ src, fallback, className }) => (
+const ChatBubbleAvatar: React.FC<ChatBubbleAvatarProps> = ({ src, className }) => (
   <Avatar className={cn('w-11 h-11 border-2 border-white shadow-sm', className)}>
     <AvatarImage src={src} alt="Avatar" />
     <AvatarFallback className="text-xs font-medium bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-      {fallback}
+      <Bell className="text-white w-5 h-5" />
     </AvatarFallback>
   </Avatar>
 );
