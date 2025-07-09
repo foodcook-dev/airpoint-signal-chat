@@ -14,9 +14,9 @@ instance.interceptors.request.use(
 
     const token = getCurrentToken();
 
-    // if (token) {
-    newConfig.headers.Authorization = `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUyMDYxNDE1LCJpYXQiOjE3NTIwMjU0MTUsImp0aSI6IjUwOTcwODk0YjFiYTRjNDNhN2FjNjA0YTY0ZGM3NmJhIiwidXNlcm5hbWUiOjF9.f-lzfKFJOa0IrfNNhuCD93Xv6XjbDSy7HDMW8Zv1v7o`;
-    // }
+    if (token) {
+      newConfig.headers.Authorization = `Bearer ${token}`;
+    }
 
     return newConfig;
   },
