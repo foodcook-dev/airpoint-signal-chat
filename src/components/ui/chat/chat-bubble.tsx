@@ -8,7 +8,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { format } from 'date-fns';
 
 // ChatBubble
-const chatBubbleVariant = cva('flex gap-3 max-w-[75%] items-end relative group mb-4', {
+const chatBubbleVariant = cva('flex gap-3 max-w-[90%] items-end relative group mb-4', {
   variants: {
     variant: {
       received: 'self-start',
