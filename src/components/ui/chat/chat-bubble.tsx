@@ -58,7 +58,7 @@ interface ChatBubbleAvatarProps {
 const ChatBubbleAvatar: React.FC<ChatBubbleAvatarProps> = ({ src, className }) => (
   <Avatar className={cn('w-11 h-11 shadow-sm', className)}>
     <AvatarImage src={src} alt="Avatar" />
-    <AvatarFallback className="text-xs font-medium bg-gradient-to-br from-blue-500 to-purple-600 text-white dark:from-blue-600 dark:to-purple-700">
+    <AvatarFallback className="text-xs font-medium bg-gradient-to-br from-blue-500 to-purple-600 text-white">
       <Bell className="text-white w-5 h-5" />
     </AvatarFallback>
   </Avatar>
@@ -176,7 +176,7 @@ const ChatBubbleActionWrapper = React.forwardRef<HTMLDivElement, ChatBubbleActio
       {...props}
     >
       {' '}
-      <div className="bg-background/90 text-gray-100 backdrop-blur-sm rounded-lg shadow-lg border border-border/50 p-1 flex gap-1 dark:bg-[rgb(35,45,67)]/90 dark:border-[rgb(45,55,77)]/50">
+      <div className="bg-[rgb(35,45,67)] border-[rgb(45,55,77)]/50 text-gray-100 backdrop-blur-sm rounded-lg shadow-lg border border-border/50 p-1 flex gap-1">
         {children}
       </div>
     </div>

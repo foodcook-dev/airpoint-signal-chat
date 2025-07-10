@@ -34,7 +34,7 @@ export default function InputForm({
     <div className="flex-shrink-0 p-4 bg-background/90 backdrop-blur-sm">
       <form
         onSubmit={onSubmit}
-        className="rounded-lg border border-gray-300 dark:border-gray-500 focus-within:ring-1 focus-within:ring-blue-500 p-1"
+        className="rounded-lg border border-gray-500 focus-within:ring-1 focus-within:ring-blue-500 p-1"
       >
         <ImagePreview images={selectedImages} onRemove={onImageRemove} />
 
@@ -45,7 +45,7 @@ export default function InputForm({
           onChange={(e) => onInputChange(e.target.value)}
         />
 
-        <div className="flex items-center border-t border-gray-300 dark:border-gray-500 justify-between p-3">
+        <div className="flex items-center border-t border-gray-500 justify-between p-3">
           <div className="flex items-center gap-2">
             <input
               ref={fileInputRef}

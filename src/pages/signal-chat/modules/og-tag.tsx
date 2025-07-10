@@ -22,11 +22,7 @@ export default function OGTag({ ogTags }: OGTagProps) {
           <div className="p-3">
             <h3 className="font-medium text-sm line-clamp-2 mb-1">{og.og_title}</h3>
             <p className="text-xs line-clamp-3 mb-1">{og.og_description}</p>
-            <a
-              href={og.og_tag_link}
-              target="_blank"
-              className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
-            >
+            <a href={og.og_tag_link} target="_blank" className="text-xs">
               {og.og_tag_link}
             </a>
           </div>
