@@ -49,7 +49,7 @@ export default function SignalMessage({ chat, onDelete }: SignalMessageProps) {
       </div>
       <ChatBubbleActionWrapper variant="sent">
         <ChatBubbleAction
-          className="size-6"
+          className="size-8"
           key={`Delete-${chat.id}`}
           icon={<Trash2 className="size-3" />}
           onClick={() => onDelete(chat.id)}

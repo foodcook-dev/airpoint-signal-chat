@@ -58,17 +58,17 @@ interface ChatBubbleAvatarProps {
 const ChatBubbleAvatar: React.FC<ChatBubbleAvatarProps> = ({ src, className }) => (
   <Avatar className={cn('w-11 h-11 shadow-sm', className)}>
     <AvatarImage src={src} alt="Avatar" />
-    <AvatarFallback className="text-xs font-medium bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+    <AvatarFallback className="text-xs font-medium bg-[rgb(255,137,93)] text-white">
       <Bell className="text-white w-5 h-5" />
     </AvatarFallback>
   </Avatar>
 );
 
 // ChatBubbleMessage
-const chatBubbleMessageVariants = cva('px-4 py-3 shadow-sm backdrop-blur-sm', {
+const chatBubbleMessageVariants = cva('px-5 py-3 shadow-sm backdrop-blur-sm', {
   variants: {
     variant: {
-      received: 'rounded-2xl rounded-br-md shadow-md text-gray-900 chat-bubble-received ',
+      received: 'rounded-2xl rounded-br-md shadow-md bg-foreground text-contrast',
       sent: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl rounded-br-md shadow-md',
     },
     layout: {
@@ -127,7 +127,7 @@ const ChatBubbleTimestamp: React.FC<ChatBubbleTimestampProps> = ({
   className,
   ...props
 }) => (
-  <div className={cn('text-xs text-left mr-[8px]', className)} {...props}>
+  <div className={cn('text-xs text-left text-contrast mr-[8px]', className)} {...props}>
     {format(timestamp, 'yyyy-MM-dd HH:mm')}
   </div>
 );
@@ -176,7 +176,7 @@ const ChatBubbleActionWrapper = React.forwardRef<HTMLDivElement, ChatBubbleActio
       {...props}
     >
       {' '}
-      <div className="bg-[rgb(35,45,67)] border-[rgb(45,55,77)]/50 text-gray-100 backdrop-blur-sm rounded-lg shadow-lg border border-border/50 p-1 flex gap-1">
+      <div className="bg-foreground text-contrast backdrop-blur-sm rounded-lg shadow-lg border border-border/50 p-1 flex gap-1">
         {children}
       </div>
     </div>

@@ -3,18 +3,16 @@ import { Bell } from 'lucide-react';
 
 export default function SignalHeader() {
   return (
-    <div className="flex-shrink-0 bg-background/90 backdrop-blur-sm border-b border-gray-300 dark:border-gray-500 px-6 py-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-700 rounded-full flex items-center justify-center">
-            <Bell className="text-white w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-foreground">관리자 시그널 발송 페이지</p>
-            <p className="text-xs text-muted-foreground">내용을 작성하고 발송하세요</p>
-          </div>
-          {/* <ThemeToggle /> */}
+    <div className="fixed top-4 left-4 z-50 bg-foreground/95 backdrop-blur-sm shadow-lg border border-border/50 px-6 py-4 rounded-2xl">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-[rgb(255,137,93)] rounded-full flex items-center justify-center">
+          <Bell className="text-white w-5 h-5" />
         </div>
+        <div>
+          <p className="text-sm text-contrast font-semibold">관리자 시그널 채팅</p>
+          <p className="text-xs text-contrast">메시지를 작성하고 전달하세요</p>
+        </div>
+        {/* <ThemeToggle /> */}
       </div>
     </div>
   );

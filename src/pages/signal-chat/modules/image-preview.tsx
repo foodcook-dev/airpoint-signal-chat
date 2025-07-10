@@ -17,11 +17,7 @@ export default function ImagePreview({ images, onRemove }: ImagePreviewProps) {
       <div className="flex gap-4 max-w-md">
         {images.map((image, index) => (
           <div key={index} className="relative">
-            <img
-              src={image.url}
-              alt={image.name}
-              className="w-full h-20 rounded-lg object-cover border border-border"
-            />
+            <img src={image.url} alt={image.name} className="w-full h-20 rounded-lg object-cover" />
             <Button
               type="button"
               onClick={() => onRemove(index)}
@@ -29,7 +25,7 @@ export default function ImagePreview({ images, onRemove }: ImagePreviewProps) {
             >
               <X className="w-3 h-3" />
             </Button>
-            <p className="text-xs text-muted-foreground mt-1 truncate">{image.name}</p>
+            <p className="text-xs text-contrast mt-1 truncate">{image.name}</p>
           </div>
         ))}
       </div>

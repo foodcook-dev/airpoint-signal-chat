@@ -15,7 +15,10 @@ export default function OGTag({ ogTags }: OGTagProps) {
   return (
     <div className="max-w-[600px]">
       {ogTags.map((og, index) => (
-        <div key={index} className="og-tag rounded-lg overflow-hidden shadow-sm">
+        <div
+          key={index}
+          className="bg-foreground text-contrast rounded-lg overflow-hidden shadow-sm"
+        >
           {og.og_image && (
             <img src={og.og_image} alt={og.og_title} className="w-full h-32 object-cover" />
           )}
