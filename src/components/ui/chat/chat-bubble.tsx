@@ -68,13 +68,12 @@ const ChatBubbleAvatar: React.FC<ChatBubbleAvatarProps> = ({ src, className }) =
 const chatBubbleMessageVariants = cva('px-4 py-3 shadow-sm backdrop-blur-sm', {
   variants: {
     variant: {
-      received:
-        'rounded-2xl rounded-br-md shadow-md bg-gray-100 text-gray-800 dark:bg-[rgb(35,45,67)] dark:text-gray-100',
-      sent: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl rounded-br-md shadow-md dark:from-blue-600 dark:to-blue-700',
+      received: 'rounded-2xl rounded-br-md shadow-md text-gray-900 chat-bubble-received ',
+      sent: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl rounded-br-md shadow-md',
     },
     layout: {
       default: '',
-      ai: 'w-full rounded-none bg-gray-50 dark:bg-[rgb(30,40,62)]',
+      ai: 'w-full rounded-none bg-gray-50 border-t border-gray-200 text-gray-900',
     },
   },
   defaultVariants: {
@@ -96,6 +95,13 @@ const ChatBubbleMessage = React.forwardRef<HTMLDivElement, ChatBubbleMessageProp
         chatBubbleMessageVariants({ variant, layout, className }),
         'break-words max-w-full whitespace-pre-wrap text-sm leading-relaxed',
       )}
+      style={{
+        backgroundColor: variant === 'received' ? 'white' : undefined,
+        ...(document.documentElement.classList.contains('dark') &&
+          variant === 'received' && {
+            backgroundColor: 'rgb(31 41 55)',
+          }),
+      }}
       ref={ref}
       {...props}
     >

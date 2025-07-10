@@ -1,4 +1,5 @@
 import { Bell } from 'lucide-react';
+// import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function SignalHeader() {
   return (
@@ -12,6 +13,7 @@ export default function SignalHeader() {
             <p className="text-sm font-semibold text-foreground">관리자 시그널 발송 페이지</p>
             <p className="text-xs text-muted-foreground">내용을 작성하고 발송하세요</p>
           </div>
+          {/* <ThemeToggle /> */}
         </div>
       </div>
     </div>
