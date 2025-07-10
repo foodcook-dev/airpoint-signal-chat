@@ -19,16 +19,10 @@ function AppContent() {
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       const { type, theme: newTheme } = event.data;
-
-      if (type === 'THEME_CHANGE') {
-        console.log('Received theme change:', newTheme);
-        setTheme(newTheme);
-      }
+      if (type === 'THEME_CHANGE') setTheme(newTheme);
     };
 
     window.addEventListener('message', handleMessage);
-
-    // cleanup
     return () => {
       window.removeEventListener('message', handleMessage);
     };
