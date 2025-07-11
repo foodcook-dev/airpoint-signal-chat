@@ -95,9 +95,8 @@ export const useSignalHandler = () => {
     }
   };
 
-  const handleDeleteMessage = (id: string) => {
-    // TODO: 실제 메시지 삭제 로직 구현
-    console.log('Delete message:', id);
+  const handleDeleteMessage = (_id: string) => {
+    alert('삭제 기능은 현재 지원되지 않습니다.');
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
