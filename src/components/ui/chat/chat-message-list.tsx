@@ -13,19 +13,16 @@ interface ChatMessageListProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const ChatMessageList = React.forwardRef<HTMLDivElement, ChatMessageListProps>(
-  (
-    {
-      className,
-      children,
-      smooth = false,
-      onLoadMore,
-      hasNextPage,
-      isFetchingNextPage,
-      scrollTriggerRef,
-      ...props
-    },
-    _ref,
-  ) => {
+  ({
+    className,
+    children,
+    smooth = false,
+    onLoadMore,
+    hasNextPage,
+    isFetchingNextPage,
+    scrollTriggerRef,
+    ...props
+  }) => {
     const { scrollRef, isAtBottom, scrollToBottom, disableAutoScroll } = useAutoScroll({
       smooth,
       content: children,

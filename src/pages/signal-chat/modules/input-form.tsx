@@ -31,7 +31,7 @@ export default function InputForm({
   onImageButtonClick,
 }: InputFormProps) {
   return (
-    <div className="flex-shrink-0 p-4 bg-background">
+    <div className="flex-shrink-0 p-2 bg-background">
       <form
         onSubmit={onSubmit}
         className="rounded-lg border border-border focus-within:ring-1 focus-within:ring-blue-500 overflow-hidden"
