@@ -31,10 +31,10 @@ export default function InputForm({
   onImageButtonClick,
 }: InputFormProps) {
   return (
-    <div className="flex-shrink-0 p-4 bg-foreground">
+    <div className="flex-shrink-0 p-4 bg-background">
       <form
         onSubmit={onSubmit}
-        className="rounded-lg border border-border focus-within:ring-1 focus-within:ring-blue-500 p-1"
+        className="rounded-lg border border-border focus-within:ring-1 focus-within:ring-blue-500 overflow-hidden"
       >
         <ImagePreview images={selectedImages} onRemove={onImageRemove} />
 
@@ -45,7 +45,7 @@ export default function InputForm({
           onChange={(e) => onInputChange(e.target.value)}
         />
 
-        <div className="flex items-center border-t border-border justify-between p-3">
+        <div className="flex items-center bg-foreground border-t border-border justify-between p-3">
           <div className="flex items-center gap-2">
             <input
               ref={fileInputRef}
