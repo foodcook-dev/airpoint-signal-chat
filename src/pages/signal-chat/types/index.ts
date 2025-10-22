@@ -10,6 +10,11 @@ export interface ChatMessage {
     og_tag_link: string;
   }>;
   content_images?: string[];
+  reactions: {
+    like: number;
+    good: number;
+    check: number;
+  };
 }
 
 export interface SelectedImage {
