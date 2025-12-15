@@ -1,12 +1,14 @@
 @import 'tailwindcss';
 
 :root {
+  --primary: oklch(0.7519 0.1551 40.76);
   --background: oklch(1 0 0);
   --foreground: oklch(0.9618 0 264.66);
   --dark-foreground: oklch(0.7164 0 264.66);
   --contrast: oklch(0.2101 0.0318 264.66);
   --placeholder: oklch(0.6481 0 264.66);
   --border: oklch(0.8603 0 264.66);
+  --muted: oklch(0.8533 0 184.24);
   --button-background: oklch(0.9362 0 264.66);
 }
 
@@ -17,16 +19,19 @@
   --contrast: oklch(1 0 0);
   --placeholder: oklch(0.7004 0 264.66);
   --border: oklch(0.6088 0.074 264.66);
+  --muted: oklch(0.4605 0.0543 264.66);
   --button-background: oklch(0.2856 0.0543 264.66);
 }
 
 @theme inline {
+  --color-primary: var(--primary);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-dark-foreground: var(--dark-foreground);
   --color-contrast: var(--contrast);
   --color-placeholder: var(--placeholder);
   --color-border: var(--border);
+  --color-muted: var(--muted);
   --color-button-background: var(--button-background);
 }
 

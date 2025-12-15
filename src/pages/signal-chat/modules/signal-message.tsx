@@ -12,7 +12,8 @@ import {
 } from '@/components/ui/chat/chat-bubble';
 import OGTag from './og-tag';
 import ContentImages from './content-images';
-import { ChatMessage } from '../types';
+import { ChatMessage } from '@/pages/signal-chat/types';
+import { PollResultMessage, PollMessage } from './poll-message';
 
 interface SignalMessageProps {
   chat: ChatMessage;
@@ -20,53 +21,84 @@ interface SignalMessageProps {
 }
 
 export default function SignalMessage({ chat, onDelete }: SignalMessageProps) {
-  return (
-    <ChatBubble key={chat.id} variant="sent">
-      <ChatBubbleAvatar />
-      <div className="flex flex-col space-y-2">
-        <div className="items-end flex flex-col space-y-2">
+  const {
+    id,
+    message_with_html,
+    message,
+    created_at,
+    og_tags,
+    content_images,
+    poll,
+    poll_notification,
+    reactions,
+  } = chat;
+
+  const renderContent = () => {
+    if (poll_notification) {
+      return (
+        <PollResultMessage
+          poll_notification={poll_notification}
+          message={message}
+          message_with_html={message_with_html}
+        />
+      );
+    }
+
+    if (poll) {
+      return <PollMessage poll={poll} created_at={created_at} />;
+    }
+
+    // 기본 채팅 + 리액션
+    return (
+      <>
+        <div className="items-end flex flex-col gap-2">
           <ChatBubbleMessage>
-            {chat.message_with_html ? (
-              <div dangerouslySetInnerHTML={{ __html: chat.message_with_html }} />
+            {message_with_html ? (
+              <div dangerouslySetInnerHTML={{ __html: message_with_html }} />
             ) : (
-              chat.message
+              message
             )}
           </ChatBubbleMessage>
-          <OGTag ogTags={chat.og_tags || []} />
-          <ContentImages images={chat.content_images || []} />
+          <OGTag ogTags={og_tags || []} />
+          <ContentImages images={content_images || []} />
         </div>
-
         <div className="flex gap-1 justify-end text-xs text-contrast/80 select-none">
-          {chat.reactions.like > 0 && (
+          {reactions?.like > 0 && (
             <div className="flex gap-1 items-center rounded-xl bg-foreground shadow-sm p-2">
               <img src={likePng} alt="like" className="inline-block h-3.5" />
-              <span>{chat.reactions.like}</span>
+              <span>{reactions.like}</span>
             </div>
           )}
-          {chat.reactions.good > 0 && (
+          {reactions?.good > 0 && (
             <div className="flex gap-1 items-center rounded-xl bg-foreground shadow-sm p-2">
               <img src={goodPng} alt="good" className="inline-block h-3.5" />
-              <span>{chat.reactions.good}</span>
+              <span>{reactions.good}</span>
             </div>
           )}
-          {chat.reactions.check > 0 && (
+          {reactions?.check > 0 && (
             <div className="flex gap-1 items-center rounded-xl bg-foreground shadow-sm p-2">
               <img src={checkPng} alt="check" className="inline-block h-3.5" />
-              <span>{chat.reactions.check}</span>
+              <span>{reactions.check}</span>
             </div>
           )}
         </div>
+      </>
+    );
+  };
 
-        <div className="flex items-center justify-end">
-          <ChatBubbleTimestamp timestamp={chat.created_at} />
-        </div>
+  return (
+    <ChatBubble key={id} variant="sent">
+      <ChatBubbleAvatar />
+      <div className="flex flex-col gap-2">
+        {renderContent()}
+        <ChatBubbleTimestamp timestamp={created_at} />
       </div>
       <ChatBubbleActionWrapper variant="sent">
         <ChatBubbleAction
           className="size-8"
-          key={`Delete-${chat.id}`}
+          key={`Delete-${id}`}
           icon={<Trash2 className="size-3" />}
-          onClick={() => onDelete(chat.id)}
+          onClick={() => onDelete(id)}
         />
       </ChatBubbleActionWrapper>
     </ChatBubble>

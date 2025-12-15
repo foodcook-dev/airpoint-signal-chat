@@ -127,7 +127,13 @@ const ChatBubbleTimestamp: React.FC<ChatBubbleTimestampProps> = ({
   className,
   ...props
 }) => (
-  <div className={cn('text-xs text-left text-contrast mr-[8px]', className)} {...props}>
+  <div
+    className={cn(
+      'flex items-center justify-end text-xs text-left text-contrast mr-[8px]',
+      className,
+    )}
+    {...props}
+  >
     {format(timestamp, 'yyyy-MM-dd HH:mm')}
   </div>
 );
