@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { Bell } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/libs/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import MessageLoading from './message-loading';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { format } from 'date-fns';
+import logoPng from '@/assets/images/app_logo.png';
 
 const chatBubbleVariant = cva('flex gap-3 max-w-[90%] items-end relative group mb-4', {
   variants: {
@@ -58,8 +58,8 @@ interface ChatBubbleAvatarProps {
 const ChatBubbleAvatar: React.FC<ChatBubbleAvatarProps> = ({ src, className }) => (
   <Avatar className={cn('w-11 h-11 shadow-sm', className)}>
     <AvatarImage src={src} alt="Avatar" />
-    <AvatarFallback className="text-xs font-medium bg-[rgb(255,137,93)] text-white">
-      <Bell className="text-white w-5 h-5" />
+    <AvatarFallback className="bg-white px-1">
+      <img src={logoPng} alt="logo" className="max-w-full" />
     </AvatarFallback>
   </Avatar>
 );
@@ -128,10 +128,7 @@ const ChatBubbleTimestamp: React.FC<ChatBubbleTimestampProps> = ({
   ...props
 }) => (
   <div
-    className={cn(
-      'flex items-center justify-end text-xs text-left text-contrast mr-[8px]',
-      className,
-    )}
+    className={cn('flex items-center justify-end text-xs text-left text-contrast/70', className)}
     {...props}
   >
     {format(timestamp, 'yyyy-MM-dd HH:mm')}

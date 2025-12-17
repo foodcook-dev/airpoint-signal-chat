@@ -59,8 +59,8 @@ export function PollResultMessage({
                 className="w-full flex items-stretch gap-3 py-2 first:pt-0 last:pb-0"
               >
                 <div className="flex flex-col items-center justify-center min-w-[2.25rem]">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs bg-primary text-white">
-                    {rank}
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs bg-primary text-white">
+                    {rank}위
                   </div>
                 </div>
 

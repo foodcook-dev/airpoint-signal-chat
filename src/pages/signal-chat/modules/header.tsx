@@ -1,12 +1,12 @@
-import { Bell } from 'lucide-react';
 import { ThemeToggle } from '@/components/modules/theme-toggle';
+import logoPng from '@/assets/images/app_logo.png';
 
-export default function SignalHeader() {
+export default function Header() {
   return (
     <div className="fixed top-4 left-4 z-50 bg-foreground/95 backdrop-blur-sm shadow-lg border border-border/50 px-6 py-4 rounded-2xl">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-[rgb(255,137,93)] rounded-full flex items-center justify-center">
-          <Bell className="text-white w-5 h-5" />
+        <div className="w-10 h-10 bg-white rounded-full flex px-1 items-center justify-center">
+          <img src={logoPng} alt="logo" className="max-w-full" />
         </div>
         <div>
           <p className="text-sm text-contrast font-semibold">관리자 시그널 채팅</p>

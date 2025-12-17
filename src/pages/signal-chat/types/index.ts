@@ -1,5 +1,6 @@
 export interface ChatMessage {
   id: string;
+  comment_count: number;
   message: string;
   message_with_html: string;
   created_at: string;
@@ -40,6 +41,19 @@ export interface ChatMessage {
   };
 }
 
+export interface Comment {
+  id: number;
+  signal_talk_id: number;
+  user_id: number;
+  username: string;
+  nickname: string;
+  message: string;
+  images: string[];
+  is_edited: boolean;
+  deleted_at: boolean;
+  created_at: string;
+}
+
 export interface SelectedImage {
   url: string;
   name: string;
@@ -54,4 +68,10 @@ export interface ChatFormData {
   message?: string;
   is_special?: string;
   images?: File[];
+}
+
+export interface CommentResponse {
+  count: number;
+  next: string;
+  results: Comment[];
 }

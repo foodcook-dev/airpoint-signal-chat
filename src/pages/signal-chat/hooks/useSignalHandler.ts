@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import createAxios from '@/libs/create-axios-instance';
 import useFetch from '@/hooks/useFetch';
-import { SelectedImage, ChatResponse } from '../types';
+import { SelectedImage, ChatResponse, ChatMessage } from '../types';
 import { CHAT_CONSTANTS } from '../constants';
 import { validateImageFile } from '../utils';
 
@@ -12,6 +12,7 @@ export const useSignalHandler = () => {
   const [inputValue, setInputValue] = useState<string>('');
   const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [selectedChat, setSelectedChat] = useState<ChatMessage | null>(null);
 
   const signalResponse = useInfiniteQuery<ChatResponse>({
     queryKey: ['signal'],
@@ -56,10 +57,6 @@ export const useSignalHandler = () => {
     const formData = new FormData();
 
     if (trimmedInput) formData.append('message', trimmedInput);
-
-    // if (isPushNotificationEnabled) {
-    //   formData.append('is_special', 'true');
-    // }
 
     try {
       for (let i = 0; i < selectedImages.length; i++) {
@@ -138,7 +135,6 @@ export const useSignalHandler = () => {
   };
 
   const handleImageRemove = (index: number) => {
-    console.log(`이미지 ${index + 1} 제거`);
     setSelectedImages((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -155,18 +151,24 @@ export const useSignalHandler = () => {
   const messageList = signalResponse.data?.pages.flatMap((page) => page.results) || [];
 
   return {
-    fileInputRef,
     scrollTriggerRef,
-    messageList,
+    selectedChat,
+    setSelectedChat,
+
+    // 메시지 입력창 관련 상태 및 함수
     inputValue,
-    selectedImages,
+    fileInputRef,
     isSubmitting,
+    selectedImages,
     setInputValue,
     handleSendMessage,
     handleDeleteMessage,
     handleImageSelect,
     handleImageRemove,
     handleImageButtonClick,
+
+    // 메시지 관련 상태 및 함수
+    messageList,
     loadMoreMessages,
     hasNextPage: signalResponse.hasNextPage,
     isFetchingNextPage: signalResponse.isFetchingNextPage,

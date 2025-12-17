@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import ResponseError from '@/libs/response-error';
+import useAlertStore from '@/store/alert';
 
 export type FetchOptions<T, U> = {
   requestFn: (args: U) => Promise<T> | null | void;
@@ -16,6 +17,7 @@ export default function useFetch<T, U>({
   onFetching,
   onSettled,
 }: FetchOptions<T, U>) {
+  const { showAlert } = useAlertStore();
   const [state, setState] = useState<any>();
   const request: (args?: U) => Promise<void> | null = async (params?: any) => {
     onFetching?.();
@@ -30,8 +32,8 @@ export default function useFetch<T, U>({
       if (onError) {
         onError?.(e as ResponseError);
       } else {
-        if (typeof e.detail === 'string') {
-          return console.log(e.detail);
+        if (typeof e.error === 'string') {
+          return showAlert(e.error);
         }
         return console.error(e);
       }
