@@ -38,7 +38,7 @@ export default function SignalChat() {
     <div className="w-[100vw] flex">
       <div
         className={`flex flex-col h-screen bg-background transition-[width] duration-100 ease-out ${
-          selectedChat ? 'w-[calc(100vw-400px)]' : 'w-[100vw]'
+          selectedChat ? 'w-[calc(100vw-450px)]' : 'w-[100vw]'
         }`}
       >
         <Header />

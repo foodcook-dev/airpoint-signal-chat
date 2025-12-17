@@ -1,9 +1,11 @@
 import { ChatBubbleMessage } from '@/components/ui/chat/chat-bubble';
 import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 import likePng from '@/assets/images/signal_like.png';
 import goodPng from '@/assets/images/signal_good.png';
 import checkPng from '@/assets/images/signal_check.png';
 import { ChatMessage } from '@/pages/signal-chat/types';
+import ImagePreviewDialog from '@/components/modules/dialog/image-preview-dialog';
 
 interface OGTag {
   og_image?: string;
@@ -47,19 +49,30 @@ interface ContentImagesProps {
 }
 
 function ContentImages({ images }: ContentImagesProps) {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   if (!images || images.length === 0) return null;
 
   return (
-    <div className="flex gap-2">
-      {images.map((imageUrl, index) => (
-        <img
-          key={index}
-          src={imageUrl}
-          alt={`image-${index + 1}`}
-          className="w-full h-32 rounded-lg object-cover"
-        />
-      ))}
-    </div>
+    <>
+      <div className="flex gap-2">
+        {images.map((imageUrl, index) => (
+          <img
+            key={index}
+            src={imageUrl}
+            alt={`image-${index + 1}`}
+            className="w-full h-32 rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => setSelectedImage(imageUrl)}
+          />
+        ))}
+      </div>
+
+      <ImagePreviewDialog
+        open={!!selectedImage}
+        onOpenChange={(open) => !open && setSelectedImage(null)}
+        imageUrl={selectedImage}
+      />
+    </>
   );
 }
 

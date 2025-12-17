@@ -11,6 +11,7 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
   const { showConfirm } = useConfirmStore();
 
   const commentObserverRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [blockDialogOpen, setBlockDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<{ userId: number; nickname: string } | null>(
     null,
@@ -116,9 +117,9 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
         }
       },
       {
-        root: null,
-        rootMargin: '100px',
-        threshold: 0.1,
+        root: scrollContainerRef.current,
+        rootMargin: '200px',
+        threshold: 0,
       },
     );
 
@@ -134,14 +135,21 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
     };
   }, [commentResponse.hasNextPage, commentResponse.isFetchingNextPage, commentResponse]);
 
+  useEffect(() => {
+    if ((commentResponse.isLoading || commentResponse.isRefetching) && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+  }, [commentResponse.isLoading || commentResponse.isRefetching]);
+
   return {
+    isFetching: commentResponse.isLoading || commentResponse.isRefetching,
     selectedUser,
     commentList: commentResponse.data?.pages.flatMap((page) => page.results) || [],
     commentCount: commentResponse.data?.pages?.[0]?.count || 0,
     commentObserverRef,
+    scrollContainerRef,
     blockDialogOpen,
-    hasNextCommentPage: commentResponse.hasNextPage,
-    isFetchingNextCommentPage: commentResponse.isFetchingNextPage,
+    commentRefetch: commentResponse.refetch,
     setBlockDialogOpen,
     handleDisableComment,
     handleBlockUser,

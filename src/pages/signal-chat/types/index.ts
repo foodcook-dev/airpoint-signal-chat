@@ -49,6 +49,7 @@ export interface Comment {
   nickname: string;
   message: string;
   images: string[];
+  reported_count: number;
   is_edited: boolean;
   deleted_at: boolean;
   created_at: string;

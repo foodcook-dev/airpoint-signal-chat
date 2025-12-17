@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import useAlertStore from '@/store/alert';
 
 interface UserBlockDialogProps {
   open: boolean;
@@ -27,12 +28,24 @@ export default function UserBlockDialog({
   nickname,
   onConfirm,
 }: UserBlockDialogProps) {
+  const { showAlert } = useAlertStore();
   const [reason, setReason] = useState('');
   const [blockedUntil, setBlockedUntil] = useState('');
   const [memo, setMemo] = useState('');
+  const [selectedPeriod, setSelectedPeriod] = useState<number | 'permanent' | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (blockedUntil) {
+      const selectedDate = new Date(blockedUntil);
+      const now = new Date();
+
+      if (selectedDate <= now) {
+        showAlert('제한 종료일시는 현재 시간 이후여야 합니다.');
+        return;
+      }
+    }
 
     onConfirm({
       userId,
@@ -44,6 +57,7 @@ export default function UserBlockDialog({
     setReason('');
     setBlockedUntil('');
     setMemo('');
+    setSelectedPeriod(null);
     onOpenChange(false);
   };
 
@@ -51,7 +65,23 @@ export default function UserBlockDialog({
     setReason('');
     setBlockedUntil('');
     setMemo('');
+    setSelectedPeriod(null);
     onOpenChange(false);
+  };
+
+  const setBlockPeriod = (days: number) => {
+    const now = new Date();
+    now.setDate(now.getDate() + days);
+    const offset = now.getTimezoneOffset() * 60000;
+    const localTime = new Date(now.getTime() - offset);
+    const formattedDate = localTime.toISOString().slice(0, 16);
+    setBlockedUntil(formattedDate);
+    setSelectedPeriod(days);
+  };
+
+  const setPermanentBlock = () => {
+    setBlockedUntil('');
+    setSelectedPeriod('permanent');
   };
 
   return (
@@ -59,9 +89,7 @@ export default function UserBlockDialog({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>사용자 댓글 작성 제한</DialogTitle>
-          <DialogDescription>
-            <span className="font-medium">{nickname}</span> 님의 댓글 작성을 제한합니다.
-          </DialogDescription>
+          <DialogDescription>{nickname}님의 댓글 작성을 제한합니다.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
@@ -79,16 +107,71 @@ export default function UserBlockDialog({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="blockedUntil" className="text-contrast">
-                차단 날짜 (언제까지)
-              </Label>
+              <div className="flex gap-2 items-center">
+                <Label htmlFor="blockedUntil" className="text-contrast">
+                  제한 종료일시
+                </Label>
+                <Label className="text-xs text-contrast/40">
+                  날짜를 지정하지 않으면 영구적으로 제한됩니다.
+                </Label>
+              </div>
               <Input
                 id="blockedUntil"
                 type="datetime-local"
                 value={blockedUntil}
-                onChange={(e) => setBlockedUntil(e.target.value)}
+                onChange={(e) => {
+                  setBlockedUntil(e.target.value);
+                  setSelectedPeriod(null);
+                }}
                 className="text-contrast"
               />
+              <div className="grid grid-cols-5 gap-2 mb-2">
+                <Button
+                  type="button"
+                  variant={selectedPeriod === 1 ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setBlockPeriod(1)}
+                  className="flex-1"
+                >
+                  1일
+                </Button>
+                <Button
+                  type="button"
+                  variant={selectedPeriod === 3 ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setBlockPeriod(3)}
+                  className="flex-1"
+                >
+                  3일
+                </Button>
+                <Button
+                  type="button"
+                  variant={selectedPeriod === 7 ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setBlockPeriod(7)}
+                  className="flex-1"
+                >
+                  7일
+                </Button>
+                <Button
+                  type="button"
+                  variant={selectedPeriod === 30 ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setBlockPeriod(30)}
+                  className="flex-1"
+                >
+                  30일
+                </Button>
+                <Button
+                  type="button"
+                  variant={selectedPeriod === 'permanent' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setPermanentBlock()}
+                  className="flex-1"
+                >
+                  영구
+                </Button>
+              </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="memo" className="text-contrast">

@@ -12,7 +12,7 @@ export default function Header() {
           <p className="text-sm text-contrast font-semibold">관리자 시그널 채팅</p>
           <p className="text-xs text-contrast">메시지를 작성하고 전달하세요</p>
         </div>
-        <ThemeToggle />
+        {/* <ThemeToggle /> */}
       </div>
     </div>
   );

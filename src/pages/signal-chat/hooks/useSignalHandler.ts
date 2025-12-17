@@ -148,8 +148,6 @@ export const useSignalHandler = () => {
     }
   }, [signalResponse]);
 
-  const messageList = signalResponse.data?.pages.flatMap((page) => page.results) || [];
-
   return {
     scrollTriggerRef,
     selectedChat,
@@ -168,7 +166,7 @@ export const useSignalHandler = () => {
     handleImageButtonClick,
 
     // 메시지 관련 상태 및 함수
-    messageList,
+    messageList: signalResponse.data?.pages.flatMap((page) => page.results) || [],
     loadMoreMessages,
     hasNextPage: signalResponse.hasNextPage,
     isFetchingNextPage: signalResponse.isFetchingNextPage,
