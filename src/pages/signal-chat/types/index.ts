@@ -4,6 +4,7 @@ export interface ChatMessage {
   message: string;
   message_with_html: string;
   created_at: string;
+  is_notice: boolean;
   og_tags: Array<{
     og_image: string;
     og_title: string;

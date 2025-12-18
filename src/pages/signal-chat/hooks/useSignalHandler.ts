@@ -2,13 +2,16 @@ import { useState, useRef, useCallback } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import createAxios from '@/libs/create-axios-instance';
 import useFetch from '@/hooks/useFetch';
-import { SelectedImage, ChatResponse, ChatMessage } from '../types';
-import { CHAT_CONSTANTS } from '../constants';
-import { validateImageFile } from '../utils';
+import useAlertStore from '@/store/alert';
+import { SelectedImage, ChatResponse, ChatMessage } from '@/pages/signal-chat/types';
+import { CHAT_CONSTANTS } from '@/pages/signal-chat/constants';
+import { validateImageFile } from '@/pages/signal-chat/utils';
 
 export const useSignalHandler = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollTriggerRef = useRef<() => void>(null);
+  const { showAlert } = useAlertStore();
+
   const [inputValue, setInputValue] = useState<string>('');
   const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -86,14 +89,14 @@ export const useSignalHandler = () => {
       }, 100);
     } catch (error) {
       console.error('메시지 전송 실패:', error);
-      alert('메시지 전송에 실패했습니다. 다시 시도해주세요.');
+      showAlert('메시지 전송에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDeleteMessage = (_id: string) => {
-    alert('삭제 기능은 현재 지원되지 않습니다.');
+    showAlert('삭제 기능은 현재 지원되지 않습니다.');
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,14 +105,14 @@ export const useSignalHandler = () => {
       const fileArray = Array.from(files);
 
       if (selectedImages.length + fileArray.length > CHAT_CONSTANTS.MAX_IMAGES) {
-        alert(`이미지는 최대 ${CHAT_CONSTANTS.MAX_IMAGES}개까지 첨부할 수 있습니다.`);
+        showAlert(`이미지는 최대 ${CHAT_CONSTANTS.MAX_IMAGES}개까지 첨부할 수 있습니다.`);
         return;
       }
 
       fileArray.forEach((file) => {
         const validationError = validateImageFile(file);
         if (validationError) {
-          alert(validationError);
+          showAlert(validationError);
           return;
         }
 
@@ -127,7 +130,7 @@ export const useSignalHandler = () => {
           }
         };
         reader.onerror = () => {
-          alert(`${file.name} 파일 읽기에 실패했습니다.`);
+          showAlert(`${file.name} 파일 읽기에 실패했습니다.`);
         };
         reader.readAsDataURL(file);
       });

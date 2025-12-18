@@ -19,6 +19,7 @@ interface SignalMessageProps {
 export default function SignalMessage({ chat, onDelete, onOpenThread }: SignalMessageProps) {
   const {
     id,
+    is_notice,
     comment_count,
     message_with_html,
     message,
@@ -39,16 +40,16 @@ export default function SignalMessage({ chat, onDelete, onOpenThread }: SignalMe
     }
 
     // 투표 메시지
-    if (poll) return <PollMessage poll={poll} created_at={created_at} />;
+    if (poll) return <PollMessage poll={poll} createdAt={created_at} isNotice={is_notice} />;
 
     // 기본 메시지
     return (
       <DefaultMessage
         message={message}
-        message_with_html={message_with_html}
-        comment_count={comment_count}
-        og_tags={og_tags}
-        content_images={content_images}
+        messageHtml={message_with_html}
+        commentCount={comment_count}
+        ogTags={og_tags}
+        contentImages={content_images}
         reactions={reactions}
         onClickCommentCount={handleClickCommentCount}
       />

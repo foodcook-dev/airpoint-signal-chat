@@ -78,20 +78,20 @@ function ContentImages({ images }: ContentImagesProps) {
 
 interface DefaultMessageProps {
   message: string;
-  message_with_html?: string | null;
-  comment_count?: number;
-  og_tags?: ChatMessage['og_tags'];
-  content_images?: ChatMessage['content_images'];
+  messageHtml?: string | null;
+  commentCount?: number;
+  ogTags?: ChatMessage['og_tags'];
+  contentImages?: ChatMessage['content_images'];
   reactions: ChatMessage['reactions'];
   onClickCommentCount?: () => void;
 }
 
 export function DefaultMessage({
   message,
-  message_with_html,
-  comment_count = 0,
-  og_tags,
-  content_images,
+  messageHtml,
+  commentCount = 0,
+  ogTags,
+  contentImages,
   reactions,
   onClickCommentCount,
 }: DefaultMessageProps) {
@@ -100,29 +100,29 @@ export function DefaultMessage({
       <div className="flex flex-col items-end gap-2">
         {/* 기본 메시지 */}
         <ChatBubbleMessage>
-          {message_with_html ? (
-            <div dangerouslySetInnerHTML={{ __html: message_with_html }} />
+          {messageHtml ? (
+            <div dangerouslySetInnerHTML={{ __html: messageHtml }} />
           ) : (
             <span className="text-contrast text-sm">{message}</span>
           )}
-          {comment_count > 0 && (
+          {commentCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
               onClick={onClickCommentCount}
               className="border-border mt-2 w-full justify-start gap-4 rounded-none border-t px-0 pt-2"
             >
-              <span className="text-primary text-xs">댓글 {comment_count}개</span>
+              <span className="text-primary text-xs">댓글 {commentCount}개</span>
               <span className="text-contrast/50 text-[10px]">댓글 전체 보기</span>
             </Button>
           )}
         </ChatBubbleMessage>
 
         {/* OG 태그 */}
-        <OGTag ogTags={og_tags || []} />
+        <OGTag ogTags={ogTags || []} />
 
         {/* 첨부된 이미지 */}
-        <ContentImages images={content_images || []} />
+        <ContentImages images={contentImages || []} />
       </div>
 
       {/* 리액션 */}

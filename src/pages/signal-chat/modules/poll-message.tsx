@@ -1,3 +1,4 @@
+import { Pin } from 'lucide-react';
 import { format } from 'date-fns';
 import { ChatBubbleMessage } from '@/components/ui/chat/chat-bubble';
 import { ChatMessage } from '@/pages/signal-chat/types';
@@ -81,10 +82,12 @@ export function PollResultMessage({
 
 export function PollMessage({
   poll,
-  created_at,
+  createdAt,
+  isNotice,
 }: {
   poll: NonNullable<ChatMessage['poll']>;
-  created_at: string;
+  createdAt: string;
+  isNotice: boolean;
 }) {
   const { title = '', content = '', end_date, options = [] } = poll;
   const totalVotes = options?.reduce((sum, o) => sum + o.vote_count, 0) || 0;
@@ -96,12 +99,13 @@ export function PollMessage({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="flex items-center rounded-md bg-gray-500 px-2 py-1">
+              {isNotice && <Pin className="mr-1 h-3 w-3 text-white" />}
               <span className="text-xs font-medium text-white">투표</span>
             </div>
             <span className="text-contrast text-sm font-semibold">{title}</span>
           </div>
           <span className="text-placeholder text-[10px]">{`${format(
-            created_at,
+            createdAt,
             'yyyy-MM-dd HH:mm',
           )} ~ ${format(end_date, 'yyyy-MM-dd HH:mm')}`}</span>
         </div>
