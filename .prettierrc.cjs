@@ -8,4 +8,5 @@ module.exports = {
   bracketSpacing: true,
   arrowParens: 'always',
   endOfLine: 'auto',
+  plugins: ['prettier-plugin-tailwindcss'],
 };

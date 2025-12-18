@@ -57,7 +57,7 @@ function AlertDialogHeader({ className, ...props }: React.ComponentProps<'div'>)
   return (
     <div
       data-slot="alert-dialog-header"
-      className={cn('flex flex-col gap-2 text-center text-contrast sm:text-left', className)}
+      className={cn('text-contrast flex flex-col gap-2 text-center sm:text-left', className)}
       {...props}
     />
   );
@@ -68,7 +68,7 @@ function AlertDialogFooter({ className, ...props }: React.ComponentProps<'div'>)
     <div
       data-slot="alert-dialog-footer"
       className={cn(
-        'flex flex-col-reverse gap-2 text-contrast sm:flex-row sm:justify-end',
+        'text-contrast flex flex-col-reverse gap-2 sm:flex-row sm:justify-end',
         className,
       )}
       {...props}
@@ -83,7 +83,7 @@ function AlertDialogTitle({
   return (
     <AlertDialogPrimitive.Title
       data-slot="alert-dialog-title"
-      className={cn('text-lg text-contrast font-semibold', className)}
+      className={cn('text-contrast text-lg font-semibold', className)}
       {...props}
     />
   );

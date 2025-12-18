@@ -35,9 +35,9 @@ export default function SignalChat() {
   const handleCloseThread = () => setSelectedChat(null);
 
   return (
-    <div className="w-[100vw] flex">
+    <div className="flex w-[100vw]">
       <div
-        className={`flex flex-col h-screen bg-background transition-[width] duration-100 ease-out ${
+        className={`bg-background flex h-screen flex-col transition-[width] duration-100 ease-out ${
           selectedChat ? 'w-[calc(100vw-450px)]' : 'w-[100vw]'
         }`}
       >

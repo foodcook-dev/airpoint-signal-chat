@@ -2,7 +2,6 @@ import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/libs/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import MessageLoading from './message-loading';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { format } from 'date-fns';
 import logoPng from '@/assets/images/app_logo.png';
@@ -25,13 +24,12 @@ const chatBubbleVariant = cva('flex gap-3 max-w-[90%] items-end relative group m
 });
 
 interface ChatBubbleProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof chatBubbleVariant> {}
+  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof chatBubbleVariant> {}
 
 const ChatBubble = React.forwardRef<HTMLDivElement, ChatBubbleProps>(
   ({ className, variant, layout, children, ...props }, ref) => (
     <div
-      className={cn(chatBubbleVariant({ variant, layout, className }), 'relative group')}
+      className={cn(chatBubbleVariant({ variant, layout, className }), 'group relative')}
       ref={ref}
       {...props}
     >
@@ -56,7 +54,7 @@ interface ChatBubbleAvatarProps {
 }
 
 const ChatBubbleAvatar: React.FC<ChatBubbleAvatarProps> = ({ src, className }) => (
-  <Avatar className={cn('w-11 h-11 shadow-sm', className)}>
+  <Avatar className={cn('h-11 w-11 shadow-sm', className)}>
     <AvatarImage src={src} alt="Avatar" />
     <AvatarFallback className="bg-white px-1">
       <img src={logoPng} alt="logo" className="max-w-full" />
@@ -83,8 +81,7 @@ const chatBubbleMessageVariants = cva('px-5 py-3 shadow-sm backdrop-blur-sm', {
 });
 
 interface ChatBubbleMessageProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof chatBubbleMessageVariants> {
+  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof chatBubbleMessageVariants> {
   isLoading?: boolean;
 }
 
@@ -93,7 +90,7 @@ const ChatBubbleMessage = React.forwardRef<HTMLDivElement, ChatBubbleMessageProp
     <div
       className={cn(
         chatBubbleMessageVariants({ variant, layout, className }),
-        'break-words max-w-full whitespace-pre-wrap text-sm leading-relaxed',
+        'max-w-full text-sm leading-relaxed break-words whitespace-pre-wrap',
       )}
       style={{
         backgroundColor: variant === 'received' ? 'white' : undefined,
@@ -105,13 +102,7 @@ const ChatBubbleMessage = React.forwardRef<HTMLDivElement, ChatBubbleMessageProp
       ref={ref}
       {...props}
     >
-      {isLoading ? (
-        <div className="flex items-center space-x-2 py-1">
-          <MessageLoading />
-        </div>
-      ) : (
-        children
-      )}
+      {children}
     </div>
   ),
 );
@@ -128,7 +119,7 @@ const ChatBubbleTimestamp: React.FC<ChatBubbleTimestampProps> = ({
   ...props
 }) => (
   <div
-    className={cn('flex items-center justify-end text-xs text-left text-contrast/70', className)}
+    className={cn('text-contrast/70 flex items-center justify-end text-left text-xs', className)}
     {...props}
   >
     {format(timestamp, 'yyyy-MM-dd HH:mm')}
@@ -152,7 +143,7 @@ const ChatBubbleAction: React.FC<ChatBubbleActionProps> = ({
   <Button
     variant={variant}
     size={size}
-    className={cn('h-8 w-8 hover:bg-accent rounded-md transition-colors', className)}
+    className={cn('hover:bg-accent h-8 w-8 rounded-md transition-colors', className)}
     onClick={onClick}
     {...props}
   >
@@ -170,7 +161,7 @@ const ChatBubbleActionWrapper = React.forwardRef<HTMLDivElement, ChatBubbleActio
     <div
       ref={ref}
       className={cn(
-        'absolute top-1/2 -translate-y-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 ease-in-out',
+        'absolute top-1/2 flex -translate-y-1/2 gap-1 opacity-0 transition-all duration-200 ease-in-out group-hover:opacity-100',
         variant === 'sent'
           ? '-left-2 -translate-x-full flex-row-reverse'
           : '-right-2 translate-x-full',
@@ -179,7 +170,7 @@ const ChatBubbleActionWrapper = React.forwardRef<HTMLDivElement, ChatBubbleActio
       {...props}
     >
       {' '}
-      <div className="bg-foreground text-contrast backdrop-blur-sm rounded-lg shadow-lg border border-border/50 p-1 flex gap-1">
+      <div className="bg-foreground text-contrast border-border/50 flex gap-1 rounded-lg border p-1 shadow-lg backdrop-blur-sm">
         {children}
       </div>
     </div>

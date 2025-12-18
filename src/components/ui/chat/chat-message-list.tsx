@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAutoScroll } from '@/components/ui/chat/hooks/useAutoScroll';
+import { useAutoScroll } from '@/hooks/useAutoScroll';
 import { cn } from '@/libs/utils';
 
 interface ChatMessageListProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -59,10 +59,10 @@ const ChatMessageList = React.forwardRef<HTMLDivElement, ChatMessageListProps>(
       }
     }, [children, isFetchingNextPage]);
     return (
-      <div className="relative w-full h-full bg-background flex-1 overflow-hidden">
+      <div className="bg-background relative h-full w-full flex-1 overflow-hidden">
         <div
           className={cn(
-            'flex flex-col w-full h-full px-4 py-6 overflow-y-auto scrollbar-thin scrollbar-thumb-background dark:scrollbar-thumb-background scrollbar-track-background',
+            'scrollbar-thin scrollbar-thumb-background dark:scrollbar-thumb-background scrollbar-track-background flex h-full w-full flex-col overflow-y-auto px-4 py-6',
             className,
           )}
           ref={scrollRef}
@@ -73,7 +73,7 @@ const ChatMessageList = React.forwardRef<HTMLDivElement, ChatMessageListProps>(
         >
           {isFetchingNextPage && (
             <div className="flex justify-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-600"></div>
             </div>
           )}
           <div className="flex flex-col gap-2">{children}</div>
@@ -83,10 +83,10 @@ const ChatMessageList = React.forwardRef<HTMLDivElement, ChatMessageListProps>(
             onClick={() => scrollToBottom()}
             size="icon"
             variant="outline"
-            className="absolute bottom-4 left-1/2 transform -translate-x-1/2 h-10 w-10 rounded-full shadow-lg bg-foreground text-contrast backdrop-blur-sm border-border/50 hover:scale-105 transition-all duration-200"
+            className="bg-foreground text-contrast border-border/50 absolute bottom-4 left-1/2 h-10 w-10 -translate-x-1/2 transform rounded-full shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-105"
             aria-label="Scroll to bottom"
           >
-            <ArrowDown className="h-4 w-4 text-muted-foreground" />
+            <ArrowDown className="text-muted-foreground h-4 w-4" />
           </Button>
         )}
       </div>

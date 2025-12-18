@@ -1,7 +1,7 @@
 import { Send, ImageIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatInput } from '@/components/ui/chat/chat-input';
-import { CHAT_CONSTANTS } from '../constants';
+import { CHAT_CONSTANTS } from '@/pages/signal-chat/constants';
 
 interface ImagePreviewProps {
   images: Array<{
@@ -15,19 +15,19 @@ function ImagePreview({ images, onRemove }: ImagePreviewProps) {
   if (images.length === 0) return null;
 
   return (
-    <div className="p-3 border-b border-border/50">
-      <div className="flex gap-4 max-w-md">
+    <div className="border-border/50 border-b p-3">
+      <div className="flex max-w-md gap-4">
         {images.map((image, index) => (
           <div key={index} className="relative">
-            <img src={image.url} alt={image.name} className="w-full h-20 rounded-lg object-cover" />
+            <img src={image.url} alt={image.name} className="h-20 w-full rounded-lg object-cover" />
             <Button
               type="button"
               onClick={() => onRemove(index)}
-              className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-xs"
+              className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white hover:bg-red-600"
             >
-              <X className="w-3 h-3" />
+              <X className="h-3 w-3" />
             </Button>
-            <p className="text-xs text-contrast mt-1 truncate">{image.name}</p>
+            <p className="text-contrast mt-1 truncate text-xs">{image.name}</p>
           </div>
         ))}
       </div>
@@ -62,11 +62,12 @@ export default function InputForm({
   onImageButtonClick,
 }: InputFormProps) {
   return (
-    <div className="flex-shrink-0 p-2 bg-background">
+    <div className="bg-background flex-shrink-0 p-2">
       <form
         onSubmit={onSubmit}
-        className="rounded-lg border border-border focus-within:ring-1 focus-within:ring-blue-500 overflow-hidden"
+        className="border-border overflow-hidden rounded-lg border focus-within:ring-1 focus-within:ring-blue-500"
       >
+        {/* 이미지 미리보기 */}
         <ImagePreview images={selectedImages} onRemove={onImageRemove} />
 
         <ChatInput
@@ -76,7 +77,7 @@ export default function InputForm({
           onChange={(e) => onInputChange(e.target.value)}
         />
 
-        <div className="flex items-center bg-foreground border-t border-border justify-between p-3">
+        <div className="bg-foreground border-border flex items-center justify-between border-t p-3">
           <div className="flex items-center gap-2">
             <input
               ref={fileInputRef}
@@ -89,7 +90,7 @@ export default function InputForm({
             <Button
               type="button"
               onClick={onImageButtonClick}
-              className="gap-1.5 hover:bg-accent text-contrast bg-button-background shadow-xs"
+              className="hover:bg-accent text-contrast bg-button-background gap-1.5 shadow-xs"
               disabled={isSubmitting}
             >
               <ImageIcon className="size-4" />
@@ -97,16 +98,14 @@ export default function InputForm({
             </Button>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Button
-              type="submit"
-              className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
-              disabled={!inputValue.trim() || isSubmitting}
-            >
-              <Send className="size-3.5" />
-              {isSubmitting ? '전송 중...' : '발송'}
-            </Button>
-          </div>
+          <Button
+            type="submit"
+            className="gap-1.5 bg-blue-600 text-white shadow-xs hover:bg-blue-700"
+            disabled={!inputValue.trim() || isSubmitting}
+          >
+            <Send className="size-3.5" />
+            {isSubmitting ? '전송 중' : '발송'}
+          </Button>
         </div>
       </form>
     </div>

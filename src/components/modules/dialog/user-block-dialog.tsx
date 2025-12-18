@@ -107,11 +107,11 @@ export default function UserBlockDialog({
               />
             </div>
             <div className="grid gap-2">
-              <div className="flex gap-2 items-center">
+              <div className="flex items-center gap-2">
                 <Label htmlFor="blockedUntil" className="text-contrast">
                   제한 종료일시
                 </Label>
-                <Label className="text-xs text-contrast/40">
+                <Label className="text-contrast/40 text-xs">
                   날짜를 지정하지 않으면 영구적으로 제한됩니다.
                 </Label>
               </div>
@@ -125,7 +125,7 @@ export default function UserBlockDialog({
                 }}
                 className="text-contrast"
               />
-              <div className="grid grid-cols-5 gap-2 mb-2">
+              <div className="mb-2 grid grid-cols-5 gap-2">
                 <Button
                   type="button"
                   variant={selectedPeriod === 1 ? 'default' : 'outline'}
@@ -182,7 +182,7 @@ export default function UserBlockDialog({
                 placeholder="추가 메모를 입력하세요 (선택사항)"
                 value={memo}
                 onChange={(e) => setMemo(e.target.value)}
-                className="resize-none text-contrast"
+                className="text-contrast resize-none"
                 rows={4}
               />
             </div>
@@ -191,7 +191,7 @@ export default function UserBlockDialog({
             <Button type="button" variant="gray" onClick={handleCancel}>
               취소
             </Button>
-            <Button type="submit" className="bg-red-500 hover:bg-red-600 text-white">
+            <Button type="submit" className="bg-red-500 text-white hover:bg-red-600">
               제한하기
             </Button>
           </DialogFooter>

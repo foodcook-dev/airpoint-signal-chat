@@ -13,12 +13,12 @@ export default function ImagePreviewDialog({
 }: ImagePreviewDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[90vw] max-h-[90vh] w-auto h-auto p-2 overflow-hidden">
+      <DialogContent className="h-auto max-h-[90vh] w-auto max-w-[90vw] overflow-hidden p-2">
         {imageUrl && (
           <img
             src={imageUrl}
             alt="확대된 이미지"
-            className="w-auto h-auto max-w-[calc(90vw-4rem)] max-h-[calc(90vh-4rem)] object-contain"
+            className="h-auto max-h-[calc(90vh-4rem)] w-auto max-w-[calc(90vw-4rem)] object-contain"
           />
         )}
       </DialogContent>

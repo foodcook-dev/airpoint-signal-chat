@@ -30,23 +30,12 @@ export default function SignalMessage({ chat, onDelete, onOpenThread }: SignalMe
     reactions,
   } = chat;
 
-  const handleClickCommentCount = () => {
-    if (!comment_count || comment_count <= 0) return;
-    if (onOpenThread) {
-      onOpenThread(chat);
-    }
-  };
+  const handleClickCommentCount = () => onOpenThread?.(chat);
 
   const renderContent = () => {
-    // 투표 종료 메시지
-    if (poll_notification) {
-      return (
-        <PollResultMessage
-          poll_notification={poll_notification}
-          message={message}
-          message_with_html={message_with_html}
-        />
-      );
+    // 투표 종료 메시지 (현재는 closed 타입만 존재)
+    if (poll_notification?.type === 'closed') {
+      return <PollResultMessage pollResult={poll_notification} message={message} />;
     }
 
     // 투표 메시지
