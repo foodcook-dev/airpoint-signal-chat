@@ -38,7 +38,7 @@ export default function CommentSection({ selectedChat, onClose }: CommentSection
   });
 
   return (
-    <div className="border-border bg-background flex h-screen w-[450px] flex-col border-l">
+    <div className="border-border/80 bg-background flex h-screen w-[450px] flex-col border">
       {/* 헤더 */}
       <div className="border-border flex items-center justify-between border-b px-4 py-3">
         <div className="flex flex-col gap-1">
@@ -56,25 +56,25 @@ export default function CommentSection({ selectedChat, onClose }: CommentSection
       </div>
 
       {/* 선택된 채팅 메시지 */}
-      <div className="border-border flex max-h-[400px] flex-shrink-0 flex-col gap-6 overflow-y-auto border-b px-4 py-5">
+      <div className="border-border flex max-h-[300px] flex-shrink-0 flex-col gap-6 overflow-y-auto border-b px-4 py-5">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white px-1 shadow-sm">
             <img src={logoPng} alt="logo" className="max-w-full" />
           </div>
           <div>
-            <p className="text-contrast/90 text-sm font-semibold">에어포인트</p>
-            <p className="text-contrast/70 text-xs">{format(created_at, 'yyyy-MM-dd HH:mm')}</p>
+            <p className="text-contrast/90 text-xs font-semibold">에어포인트</p>
+            <p className="text-contrast/70 text-[10px]">{format(created_at, 'yyyy-MM-dd HH:mm')}</p>
           </div>
         </div>
 
         {/* 채팅 메시지 */}
         {message_with_html ? (
           <div
-            className="text-contrast max-w-full text-sm leading-relaxed break-words whitespace-pre-wrap"
+            className="text-contrast max-w-full text-xs leading-relaxed break-words whitespace-pre-wrap"
             dangerouslySetInnerHTML={{ __html: message_with_html }}
           />
         ) : (
-          <span className="text-contrast text-sm break-words">{message}</span>
+          <span className="text-contrast text-xs break-words">{message}</span>
         )}
 
         {/* 첨부된 이미지 */}
@@ -164,19 +164,19 @@ export default function CommentSection({ selectedChat, onClose }: CommentSection
                   {deleted_at && (
                     <div className="text-contrast/50 mb-2 flex items-center gap-0.5">
                       <Trash2 className="size-3" />
-                      <span className="text-xs">삭제된 댓글입니다.</span>
+                      <span className="text-[10px]">삭제된 댓글입니다.</span>
                     </div>
                   )}
                   <div className="mb-2 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <p
-                        className={`truncate text-sm font-medium ${
+                        className={`truncate text-xs font-medium ${
                           deleted_at ? 'text-contrast/50' : 'text-contrast/90'
                         }`}
                       >
                         {nickname}
                       </p>
-                      <div className="text-contrast/70 flex gap-1 text-xs whitespace-nowrap">
+                      <div className="text-contrast/70 flex gap-1 text-[10px] whitespace-nowrap">
                         <p>{format(created_at, 'yyyy-MM-dd HH:mm')}</p>
                         {is_edited && <p>(수정됨)</p>}
                       </div>
@@ -212,7 +212,7 @@ export default function CommentSection({ selectedChat, onClose }: CommentSection
                     </div>
                   </div>
                   <div
-                    className={`py-2 text-sm leading-relaxed break-words whitespace-pre-wrap ${
+                    className={`py-1 text-xs leading-relaxed break-words whitespace-pre-wrap ${
                       deleted_at ? 'text-contrast/40' : 'text-contrast'
                     }`}
                   >
@@ -220,12 +220,12 @@ export default function CommentSection({ selectedChat, onClose }: CommentSection
                   </div>
                   {images.length > 0 && (
                     <>
-                      <div className="mt-4">
-                        <span className="text-contrast/50 text-xs">
+                      <div className="mt-2">
+                        <span className="text-contrast/50 text-[10px]">
                           첨부 이미지 {images.length}장
                         </span>
                       </div>
-                      <div className="[&::-webkit-scrollbar-thumb]:bg-contrast/20 hover:[&::-webkit-scrollbar-thumb]:bg-contrast/40 mt-2 flex gap-4 overflow-x-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
+                      <div className="[&::-webkit-scrollbar-thumb]:bg-contrast/20 hover:[&::-webkit-scrollbar-thumb]:bg-contrast/40 flex gap-4 overflow-x-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
                         {images.map((image) => (
                           <div key={image} className="flex justify-center pb-2">
                             <img
