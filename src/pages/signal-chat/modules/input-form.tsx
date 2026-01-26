@@ -101,7 +101,7 @@ export default function InputForm({
           <Button
             type="submit"
             className="gap-1.5 bg-blue-600 text-white shadow-xs hover:bg-blue-700"
-            disabled={!inputValue.trim() || isSubmitting}
+            disabled={(!inputValue.trim() && selectedImages.length === 0) || isSubmitting}
           >
             <Send className="size-3.5" />
             {isSubmitting ? '전송 중' : '발송'}

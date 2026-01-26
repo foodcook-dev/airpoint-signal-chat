@@ -100,11 +100,19 @@ export function DefaultMessage({
       <div className="flex flex-col items-end gap-2">
         {/* 기본 메시지 */}
         <ChatBubbleMessage>
+          {/* 첨부된 이미지 */}
+          <ContentImages images={contentImages || []} />
+
+          {!!contentImages?.length && (messageHtml || message) && <div className="my-2" />}
+
+          {/* 메시지 내용 */}
           {messageHtml ? (
             <div dangerouslySetInnerHTML={{ __html: messageHtml }} />
           ) : (
             <span className="text-contrast text-sm">{message}</span>
           )}
+
+          {/* 댓글 수 & 댓글 창 열기 */}
           {commentCount > 0 && (
             <Button
               variant="ghost"
@@ -120,9 +128,6 @@ export function DefaultMessage({
 
         {/* OG 태그 */}
         <OGTag ogTags={ogTags || []} />
-
-        {/* 첨부된 이미지 */}
-        <ContentImages images={contentImages || []} />
       </div>
 
       {/* 리액션 */}
