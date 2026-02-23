@@ -2,6 +2,9 @@ import { Send, ImageIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatInput } from '@/components/ui/chat/chat-input';
 import { CHAT_CONSTANTS } from '@/pages/signal-chat/constants';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 interface ImagePreviewProps {
   images: Array<{
@@ -48,6 +51,11 @@ interface InputFormProps {
   onImageSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onImageRemove: (index: number) => void;
   onImageButtonClick: () => void;
+  // 추가된 props
+  isAutoReactionEnabled?: boolean;
+  maxAutoReactions?: number;
+  onAutoReactionToggle?: (enabled: boolean) => void;
+  onMaxAutoReactionsChange?: (value: number) => void;
 }
 
 export default function InputForm({
@@ -60,6 +68,10 @@ export default function InputForm({
   onImageSelect,
   onImageRemove,
   onImageButtonClick,
+  isAutoReactionEnabled = false,
+  maxAutoReactions = 5,
+  onAutoReactionToggle,
+  onMaxAutoReactionsChange,
 }: InputFormProps) {
   return (
     <div className="bg-background flex-shrink-0 p-2">
@@ -98,14 +110,55 @@ export default function InputForm({
             </Button>
           </div>
 
-          <Button
-            type="submit"
-            className="gap-1.5 bg-blue-600 text-white shadow-xs hover:bg-blue-700"
-            disabled={(!inputValue.trim() && selectedImages.length === 0) || isSubmitting}
-          >
-            <Send className="size-3.5" />
-            {isSubmitting ? '전송 중' : '발송'}
-          </Button>
+          <div className="flex items-center gap-3">
+            <div className="border-border/50 bg-muted/30 flex items-center gap-3 rounded-md border px-3 py-1.5">
+              <div className="flex h-7 items-center gap-2">
+                <Switch
+                  id="auto-reaction"
+                  checked={isAutoReactionEnabled}
+                  onCheckedChange={onAutoReactionToggle}
+                />
+                <Label
+                  htmlFor="auto-reaction"
+                  className="cursor-pointer text-xs font-normal whitespace-nowrap"
+                >
+                  자동 리액션 활성화
+                </Label>
+              </div>
+
+              <div className="border-border/50 flex items-center justify-center gap-2 border-l pl-3">
+                <Input
+                  id="max-reactions"
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={maxAutoReactions}
+                  disabled={!isAutoReactionEnabled}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    if (value >= 1 && value <= 20) {
+                      onMaxAutoReactionsChange?.(value);
+                    } else if (value > 20) {
+                      onMaxAutoReactionsChange?.(20);
+                    } else if (value < 1) {
+                      onMaxAutoReactionsChange?.(1);
+                    }
+                  }}
+                  className="border-border/50 bg-background h-7 w-14 text-center text-xs"
+                />
+                <span className="text-muted-foreground text-xs">개</span>
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              className="gap-1.5 bg-blue-600 text-white shadow-xs hover:bg-blue-700"
+              disabled={(!inputValue.trim() && selectedImages.length === 0) || isSubmitting}
+            >
+              <Send className="size-3.5" />
+              {isSubmitting ? '전송 중' : '발송'}
+            </Button>
+          </div>
         </div>
       </form>
     </div>

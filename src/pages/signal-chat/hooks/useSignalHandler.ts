@@ -1,7 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import createAxios from '@/libs/create-axios-instance';
-import useFetch from '@/hooks/useFetch';
 import useAlertStore from '@/store/alert';
 import { SelectedImage, ChatResponse, ChatMessage } from '@/pages/signal-chat/types';
 import { CHAT_CONSTANTS } from '@/pages/signal-chat/constants';
@@ -14,6 +13,8 @@ export const useSignalHandler = () => {
 
   const [inputValue, setInputValue] = useState<string>('');
   const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
+  const [isAutoReactionEnabled, setIsAutoReactionEnabled] = useState<boolean>(false);
+  const [maxAutoReactions, setMaxAutoReactions] = useState<number>(12);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [selectedChat, setSelectedChat] = useState<ChatMessage | null>(null);
 
@@ -35,19 +36,14 @@ export const useSignalHandler = () => {
     initialPageParam: 1,
   });
 
-  const useSendChat = () => {
-    const { request } = useFetch<any, FormData>({
-      requestFn: (params) => {
-        return createAxios({
-          method: 'post',
-          endpoint: `/talk/signal_talks/create/`,
-          body: params,
-        });
-      },
-    });
-    return request;
-  };
-  const sendChatRequest = useSendChat();
+  const { mutateAsync: sendChatMutate } = useMutation({
+    mutationFn: (formData: FormData) =>
+      createAxios({
+        method: 'post',
+        endpoint: `/talk/signal_talks/create/`,
+        body: formData,
+      }),
+  });
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +56,13 @@ export const useSignalHandler = () => {
     const formData = new FormData();
 
     if (trimmedInput) formData.append('message', trimmedInput);
+
+    // 자동 리액션 설정 항상 전송
+    formData.append('enable_auto_reactions', isAutoReactionEnabled.toString());
+    formData.append(
+      'max_auto_reactions',
+      isAutoReactionEnabled ? maxAutoReactions.toString() : '0',
+    );
 
     try {
       for (let i = 0; i < selectedImages.length; i++) {
@@ -74,7 +77,7 @@ export const useSignalHandler = () => {
         }
       }
 
-      await sendChatRequest(formData);
+      await sendChatMutate(formData);
 
       setInputValue('');
       setSelectedImages([]);
@@ -158,9 +161,13 @@ export const useSignalHandler = () => {
 
     // 메시지 입력창 관련 상태 및 함수
     inputValue,
+    isAutoReactionEnabled,
+    maxAutoReactions,
     fileInputRef,
     isSubmitting,
     selectedImages,
+    setIsAutoReactionEnabled,
+    setMaxAutoReactions,
     setInputValue,
     handleSendMessage,
     handleDeleteMessage,

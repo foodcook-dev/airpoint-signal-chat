@@ -14,10 +14,14 @@ export default function SignalChat() {
 
     // 메시지 입력창 관련 상태 및 함수
     inputValue,
+    isAutoReactionEnabled,
+    maxAutoReactions,
     fileInputRef,
     isSubmitting,
     selectedImages,
     setInputValue,
+    setIsAutoReactionEnabled,
+    setMaxAutoReactions,
     handleSendMessage,
     handleDeleteMessage,
     handleImageSelect,
@@ -70,6 +74,10 @@ export default function SignalChat() {
           onImageSelect={handleImageSelect}
           onImageRemove={handleImageRemove}
           onImageButtonClick={handleImageButtonClick}
+          isAutoReactionEnabled={isAutoReactionEnabled}
+          maxAutoReactions={maxAutoReactions}
+          onAutoReactionToggle={setIsAutoReactionEnabled}
+          onMaxAutoReactionsChange={setMaxAutoReactions}
         />
       </div>
       {selectedChat && <CommentSection selectedChat={selectedChat} onClose={handleCloseThread} />}
