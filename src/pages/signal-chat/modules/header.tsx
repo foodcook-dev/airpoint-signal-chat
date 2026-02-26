@@ -1,8 +1,27 @@
 // import { ThemeToggle } from '@/components/modules/theme-toggle';
+import React, { useState } from 'react';
 import logoPng from '@/assets/images/app_logo.png';
 import { useQuery } from '@tanstack/react-query';
 import createAxios from '@/libs/create-axios-instance';
-import { Users } from 'lucide-react';
+import { Info } from 'lucide-react';
+
+function Tooltip({ children, text }: { children: React.ReactNode; text: string }) {
+  const [show, setShow] = useState(false);
+  return (
+    <span
+      className="relative flex items-center"
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      {children}
+      {show && (
+        <span className="absolute top-full left-22 z-10 mt-1 w-max -translate-x-1/2 rounded bg-black px-2 py-1 text-xs text-white shadow">
+          {text}
+        </span>
+      )}
+    </span>
+  );
+}
 
 export default function Header() {
   const { data: activeUserCount } = useQuery({
@@ -26,10 +45,11 @@ export default function Header() {
             <p className="text-contrast text-sm font-semibold">관리자 시그널 채팅</p>
             <p className="text-contrast text-xs">메시지를 작성하고 전달하세요.</p>
           </div>
-          {/* <ThemeToggle /> */}
         </div>
         <div className="flex items-center justify-center gap-2 bg-blue-50 py-1 text-xs font-medium text-blue-700">
-          <Users className="h-4 w-4 text-blue-500" />
+          <Tooltip text="현재 시그널 채팅에 접속해 있는 사용자 수입니다.">
+            <Info className="h-4 w-4 cursor-pointer text-blue-400" />
+          </Tooltip>
           <span>{`현재 ${activeUserCount?.connected_count || 0}명 접속중`}</span>
         </div>
       </div>
