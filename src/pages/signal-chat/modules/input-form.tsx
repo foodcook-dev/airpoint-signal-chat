@@ -120,7 +120,7 @@ export default function InputForm({
                 />
                 <Label
                   htmlFor="auto-reaction"
-                  className="cursor-pointer text-xs font-normal whitespace-nowrap"
+                  className="text-contrast cursor-pointer text-xs font-normal whitespace-nowrap"
                 >
                   자동 리액션 활성화
                 </Label>
@@ -144,9 +144,9 @@ export default function InputForm({
                       onMaxAutoReactionsChange?.(1);
                     }
                   }}
-                  className="border-border/50 bg-background h-7 w-14 text-center text-xs"
+                  className="border-border/50 bg-background text-contrast h-7 w-14 text-center text-xs"
                 />
-                <span className="text-muted-foreground text-xs">개</span>
+                <span className="text-contrast text-xs">개</span>
               </div>
             </div>
 

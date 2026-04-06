@@ -46,10 +46,11 @@ export default function Header() {
             <p className="text-contrast text-xs">메시지를 작성하고 전달하세요.</p>
           </div>
         </div>
-        <div className="flex items-center justify-center gap-2 bg-blue-50 py-1 text-xs font-medium text-blue-700">
+        <div className="flex items-center justify-center gap-2 rounded-lg bg-blue-50 py-1 text-xs font-medium text-blue-700">
           <Tooltip text="현재 시그널 채팅에 접속해 있는 사용자 수입니다.">
             <Info className="h-4 w-4 cursor-pointer text-blue-400" />
           </Tooltip>
+          {/* <ThemeToggle /> */}
           <span>{`현재 ${activeUserCount?.connected_count || 0}명 접속중`}</span>
         </div>
       </div>
