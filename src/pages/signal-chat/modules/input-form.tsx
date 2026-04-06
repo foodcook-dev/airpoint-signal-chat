@@ -131,15 +131,15 @@ export default function InputForm({
                   id="max-reactions"
                   type="number"
                   min={1}
-                  max={20}
+                  max={30}
                   value={maxAutoReactions}
                   disabled={!isAutoReactionEnabled}
                   onChange={(e) => {
                     const value = Number(e.target.value);
-                    if (value >= 1 && value <= 20) {
+                    if (value >= 1 && value <= 30) {
                       onMaxAutoReactionsChange?.(value);
-                    } else if (value > 20) {
-                      onMaxAutoReactionsChange?.(20);
+                    } else if (value > 30) {
+                      onMaxAutoReactionsChange?.(30);
                     } else if (value < 1) {
                       onMaxAutoReactionsChange?.(1);
                     }
