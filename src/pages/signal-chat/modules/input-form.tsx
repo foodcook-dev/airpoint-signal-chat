@@ -69,7 +69,7 @@ export default function InputForm({
   onImageRemove,
   onImageButtonClick,
   isAutoReactionEnabled = false,
-  maxAutoReactions = 5,
+  maxAutoReactions = 20,
   onAutoReactionToggle,
   onMaxAutoReactionsChange,
 }: InputFormProps) {

@@ -13,8 +13,8 @@ export const useSignalHandler = () => {
 
   const [inputValue, setInputValue] = useState<string>('');
   const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
-  const [isAutoReactionEnabled, setIsAutoReactionEnabled] = useState<boolean>(false);
-  const [maxAutoReactions, setMaxAutoReactions] = useState<number>(12);
+  const [isAutoReactionEnabled, setIsAutoReactionEnabled] = useState<boolean>(true);
+  const [maxAutoReactions, setMaxAutoReactions] = useState<number>(20);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [selectedChat, setSelectedChat] = useState<ChatMessage | null>(null);
 
