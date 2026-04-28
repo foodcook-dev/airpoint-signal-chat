@@ -69,7 +69,7 @@ export default function InputForm({
   onImageRemove,
   onImageButtonClick,
   isAutoReactionEnabled = false,
-  maxAutoReactions = 20,
+  maxAutoReactions = 50,
   onAutoReactionToggle,
   onMaxAutoReactionsChange,
 }: InputFormProps) {
@@ -131,15 +131,15 @@ export default function InputForm({
                   id="max-reactions"
                   type="number"
                   min={1}
-                  max={30}
+                  max={50}
                   value={maxAutoReactions}
                   disabled={!isAutoReactionEnabled}
                   onChange={(e) => {
                     const value = Number(e.target.value);
-                    if (value >= 1 && value <= 30) {
+                    if (value >= 1 && value <= 50) {
                       onMaxAutoReactionsChange?.(value);
-                    } else if (value > 30) {
-                      onMaxAutoReactionsChange?.(30);
+                    } else if (value > 50) {
+                      onMaxAutoReactionsChange?.(50);
                     } else if (value < 1) {
                       onMaxAutoReactionsChange?.(1);
                     }
