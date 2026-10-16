@@ -3,7 +3,7 @@ import { ko } from 'date-fns/locale';
 
 // 예) 2026년 10월 16일 오후 01:30
 export const formatSignalDate = (date: string | number | Date): string =>
-  format(date, 'yyyy년 MM월 dd일 a hh:mm', { locale: ko });
+  format(date, 'MM월 dd일 a h:mm', { locale: ko });
 
 // 댓글 작성 시간 전용 — 1분 미만 "방금 전", 1시간 미만 "N분 전", 24시간 미만 "N시간 전",
 // 7일 미만 "N일 전", 그 이후는 "yyyy.MM.dd"

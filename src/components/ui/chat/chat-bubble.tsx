@@ -123,7 +123,7 @@ const ChatBubbleTimestamp: React.FC<ChatBubbleTimestampProps> = ({
     className={cn('text-contrast/70 flex items-center justify-end text-left text-xs', className)}
     {...props}
   >
-    {format(timestamp, 'yyyy년 MM월 dd일 a hh:mm', { locale: ko })}
+    {format(timestamp, 'yyyy년 MM월 dd일 a h:mm', { locale: ko })}
   </div>
 );
 
