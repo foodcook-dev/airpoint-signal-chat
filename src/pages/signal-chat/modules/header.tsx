@@ -1,13 +1,17 @@
-// import { ThemeToggle } from '@/components/modules/theme-toggle';
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import logoPng from '@/assets/images/app_logo.png';
 import { useQuery } from '@tanstack/react-query';
 import createAxios from '@/libs/create-axios-instance';
-import { Crown, Info, Users } from 'lucide-react';
+import { Crown, Info, Users, Bell } from 'lucide-react';
 import { cn } from '@/libs/utils';
+import { Button } from '@/components/ui/button';
+import NewCommentsPopover from '@/components/modules/new-comments-popover';
 import { SIGNAL_CHANNELS } from '@/pages/signal-chat/constants';
 import type { SignalChannel } from '@/pages/signal-chat/types';
+
+// TODO: API 연동 전 시안 — 실제로는 서버에서 마지막 확인 시점 이후 신규 댓글 수를 내려줘야 함
+const MOCK_NEW_COMMENT_COUNT = 5;
 
 function Tooltip({ children, text }: { children: React.ReactNode; text: string }) {
   const [show, setShow] = useState(false);
@@ -67,6 +71,11 @@ function ChannelTab({ channel, isActive }: { channel: SignalChannel; isActive: b
 }
 
 export default function Header({ channel }: { channel: SignalChannel }) {
+  const channelConfig = SIGNAL_CHANNELS[channel];
+  const [newCommentsOpen, setNewCommentsOpen] = useState(false);
+  // "모두 확인" 버튼을 눌러야 비워짐 (목업 — 실제로는 서버에 확인 처리를 기록해야 함)
+  const [newCommentCount, setNewCommentCount] = useState(MOCK_NEW_COMMENT_COUNT);
+
   return (
     <div className="bg-background border-border flex flex-shrink-0 items-center justify-between gap-4 border-b px-4 py-3">
       <div className="flex items-center gap-4">
@@ -87,10 +96,37 @@ export default function Header({ channel }: { channel: SignalChannel }) {
         </nav>
       </div>
 
-      <Tooltip text="탭의 숫자는 채널별 현재 접속 중인 사용자 수입니다.">
-        <Info className="h-4 w-4 cursor-pointer text-blue-400" />
-      </Tooltip>
-      {/* <ThemeToggle /> */}
+      <div className="flex items-center gap-3">
+        <Tooltip text="탭의 숫자는 채널별 현재 접속 중인 사용자 수입니다.">
+          <Info className="h-4 w-4 cursor-pointer text-blue-400" />
+        </Tooltip>
+
+        <NewCommentsPopover
+          open={newCommentsOpen}
+          onOpenChange={setNewCommentsOpen}
+          unreadCount={newCommentCount}
+          onMarkAllRead={() => setNewCommentCount(0)}
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            className={cn('relative gap-1.5 text-xs', channelConfig.tabActiveClass)}
+          >
+            <Bell className="size-4" />
+            {channelConfig.shortLabel} 새 소식
+            {newCommentCount > 0 && (
+              <span
+                className={cn(
+                  'flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold',
+                  channelConfig.badgeClass,
+                )}
+              >
+                {newCommentCount}
+              </span>
+            )}
+          </Button>
+        </NewCommentsPopover>
+      </div>
     </div>
   );
 }
