@@ -510,7 +510,7 @@ export default function CommentSection({ selectedChat, onClose }: CommentSection
             <Textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder="관리자 댓글을 작성하세요."
+              placeholder="댓글을 작성하세요"
               className="max-h-24 min-h-9 flex-1 resize-none border-0 bg-transparent py-1.5 text-xs shadow-none focus-visible:ring-0 md:text-xs"
             />
             <input
