@@ -5,6 +5,8 @@ export interface ChatMessage {
   message_with_html: string;
   created_at: string;
   is_notice: boolean;
+  // TODO: 백엔드 필드 확정 전까지 optional — 투자노트로 픽된 시그널인지 여부
+  is_investment_note?: boolean;
   og_tags: Array<{
     og_image: string;
     og_title: string;

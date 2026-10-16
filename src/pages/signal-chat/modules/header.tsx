@@ -113,7 +113,7 @@ export default function Header({ channel }: { channel: SignalChannel }) {
             className={cn('relative gap-1.5 text-xs', channelConfig.tabActiveClass)}
           >
             <Bell className="size-4" />
-            {channelConfig.shortLabel} 새 소식
+            {channelConfig.shortLabel} 새 댓글
             {newCommentCount > 0 && (
               <span
                 className={cn(

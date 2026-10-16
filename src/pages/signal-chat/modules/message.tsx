@@ -1,4 +1,4 @@
-import { Trash2 } from 'lucide-react';
+import { Trash2, Star } from 'lucide-react';
 import {
   ChatBubble,
   ChatBubbleAvatar,
@@ -14,12 +14,22 @@ interface SignalMessageProps {
   chat: ChatMessage;
   onDelete: (id: string) => void;
   onOpenThread?: (chat: ChatMessage) => void;
+  onToggleInvestmentNote?: (messageId: string) => void;
+  // 투자노트는 프리미엄 채널에만 있는 기능 — 무료 채널에서는 버튼 자체를 숨김
+  canPickInvestmentNote?: boolean;
 }
 
-export default function SignalMessage({ chat, onDelete, onOpenThread }: SignalMessageProps) {
+export default function SignalMessage({
+  chat,
+  onDelete,
+  onOpenThread,
+  onToggleInvestmentNote,
+  canPickInvestmentNote = false,
+}: SignalMessageProps) {
   const {
     id,
     is_notice,
+    is_investment_note,
     comment_count,
     message_with_html,
     message,
@@ -59,16 +69,44 @@ export default function SignalMessage({ chat, onDelete, onOpenThread }: SignalMe
   return (
     <ChatBubble key={id} variant="sent">
       <ChatBubbleAvatar />
-      <div className="flex flex-col gap-2">
+      <div className="relative flex flex-col gap-2">
+        {canPickInvestmentNote && is_investment_note && (
+          <div className="absolute -top-2 -right-2 z-10 flex items-center gap-1 rounded-full bg-amber-500 px-2 py-1 text-[11px] font-semibold whitespace-nowrap text-white shadow-sm">
+            <Star className="size-3 fill-white" />
+            투자노트
+          </div>
+        )}
         {renderContent()}
         <ChatBubbleTimestamp timestamp={created_at} />
       </div>
       <ChatBubbleActionWrapper variant="sent">
+        {canPickInvestmentNote && (
+          <ChatBubbleAction
+            className="h-8 w-auto justify-start gap-1.5 px-2.5 text-xs font-medium whitespace-nowrap"
+            key={`InvestmentNote-${id}`}
+            icon={
+              <>
+                <Star
+                  className={`size-3 ${is_investment_note ? 'fill-amber-500 text-amber-500' : ''}`}
+                />
+                {is_investment_note ? '투자노트 해제' : '투자노트 지정'}
+              </>
+            }
+            onClick={() => onToggleInvestmentNote?.(id)}
+            title={is_investment_note ? '투자노트 해제' : '투자노트로 픽'}
+          />
+        )}
         <ChatBubbleAction
-          className="size-8"
+          className="h-8 w-auto justify-start gap-1.5 px-2.5 text-xs font-medium whitespace-nowrap"
           key={`Delete-${id}`}
-          icon={<Trash2 className="size-3" />}
+          icon={
+            <>
+              <Trash2 className="size-3" />
+              삭제
+            </>
+          }
           onClick={() => onDelete(id)}
+          title="삭제"
         />
       </ChatBubbleActionWrapper>
     </ChatBubble>

@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQueryClient, InfiniteData } from '@tanstack/react-query';
 import createAxios from '@/libs/create-axios-instance';
 import useAlertStore from '@/store/alert';
 import useSignalDraftStore from '@/store/signal-draft';
@@ -30,13 +30,18 @@ export const useSignalHandler = (channel: SignalChannel) => {
     updateDraft(channel, (prev) => ({ selectedImages: updater(prev.selectedImages) }));
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [selectedChat, setSelectedChat] = useState<ChatMessage | null>(null);
+  // 선택된 메시지는 id만 들고 있다가 messageList에서 매번 찾아 씀 — 투자노트 픽처럼
+  // 리스트 데이터가 바뀌었을 때 상세 패널도 항상 최신 상태를 보도록 하기 위함
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
 
   // 유료 채널은 audience=paid, 무료 채널은 audience=free로 조회
   const audience = channel === 'premium' ? 'paid' : 'free';
 
+  const queryClient = useQueryClient();
+  const signalQueryKey = ['signal', channel];
+
   const signalResponse = useInfiniteQuery<ChatResponse>({
-    queryKey: ['signal', channel],
+    queryKey: signalQueryKey,
     queryFn: ({ pageParam = 1 }) =>
       createAxios({
         method: 'get',
@@ -171,6 +176,28 @@ export const useSignalHandler = (channel: SignalChannel) => {
     }
   }, [signalResponse]);
 
+  // TODO: 실제 API 연동 — 토글 엔드포인트가 정해지면 아래 캐시 업데이트 전후로 요청 추가
+  const handleToggleInvestmentNote = (messageId: string) => {
+    queryClient.setQueryData<InfiniteData<ChatResponse>>(signalQueryKey, (old) => {
+      if (!old) return old;
+      return {
+        ...old,
+        pages: old.pages.map((page) => ({
+          ...page,
+          results: page.results.map((msg) =>
+            msg.id === messageId
+              ? { ...msg, is_investment_note: !msg.is_investment_note }
+              : msg,
+          ),
+        })),
+      };
+    });
+  };
+
+  const messageList = signalResponse.data?.pages.flatMap((page) => page.results) || [];
+  const selectedChat = messageList.find((msg) => msg.id === selectedChatId) || null;
+  const setSelectedChat = (chat: ChatMessage | null) => setSelectedChatId(chat?.id ?? null);
+
   return {
     scrollTriggerRef,
     selectedChat,
@@ -193,9 +220,10 @@ export const useSignalHandler = (channel: SignalChannel) => {
     handleImageButtonClick,
 
     // 메시지 관련 상태 및 함수
-    messageList: signalResponse.data?.pages.flatMap((page) => page.results) || [],
+    messageList,
     loadMoreMessages,
     hasNextPage: signalResponse.hasNextPage,
     isFetchingNextPage: signalResponse.isFetchingNextPage,
+    handleToggleInvestmentNote,
   };
 };

@@ -9,6 +9,7 @@ import {
   MessageSquare,
   CornerDownRight,
   ImageIcon,
+  Star,
 } from 'lucide-react';
 import { ReplyIcon } from '@/components/icons/reply-icon';
 import { Button } from '@/components/ui/button';
@@ -27,10 +28,26 @@ import { useCommentHandler } from '@/pages/signal-chat/hooks/useCommentHandler';
 interface CommentSectionProps {
   selectedChat: ChatMessage;
   onClose: () => void;
+  onToggleInvestmentNote?: (messageId: string) => void;
+  // 투자노트는 프리미엄 채널에만 있는 기능 — 무료 채널에서는 버튼 자체를 숨김
+  canPickInvestmentNote?: boolean;
 }
 
-export default function CommentSection({ selectedChat, onClose }: CommentSectionProps) {
-  const { message_with_html, message, content_images, created_at, reactions } = selectedChat;
+export default function CommentSection({
+  selectedChat,
+  onClose,
+  onToggleInvestmentNote,
+  canPickInvestmentNote = false,
+}: CommentSectionProps) {
+  const {
+    id,
+    message_with_html,
+    message,
+    content_images,
+    created_at,
+    reactions,
+    is_investment_note,
+  } = selectedChat;
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const {
     isFetching,
@@ -88,14 +105,32 @@ export default function CommentSection({ selectedChat, onClose }: CommentSection
 
       {/* 선택된 채팅 메시지 */}
       <div className="bg-foreground/70 border-border/60 flex max-h-[300px] flex-shrink-0 flex-col gap-5 overflow-y-auto border-b px-4 py-5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white px-1 shadow-sm">
-            <img src={logoPng} alt="logo" className="max-w-full" />
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white px-1 shadow-sm">
+              <img src={logoPng} alt="logo" className="max-w-full" />
+            </div>
+            <div>
+              <p className="text-contrast/90 text-xs font-semibold">에어포인트</p>
+              <p className="text-contrast/70 text-[10px]">{formatSignalDate(created_at)}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-contrast/90 text-xs font-semibold">에어포인트</p>
-            <p className="text-contrast/70 text-[10px]">{formatSignalDate(created_at)}</p>
-          </div>
+
+          {canPickInvestmentNote && (
+            <Button
+              variant={is_investment_note ? 'default' : 'outline'}
+              size="sm"
+              className={
+                is_investment_note
+                  ? 'gap-1.5 bg-amber-500 text-xs text-white hover:bg-amber-600'
+                  : 'gap-1.5 text-xs'
+              }
+              onClick={() => onToggleInvestmentNote?.(id)}
+            >
+              <Star className={`size-3.5 ${is_investment_note ? 'fill-white' : ''}`} />
+              {is_investment_note ? '투자노트 해제' : '투자노트 지정'}
+            </Button>
+          )}
         </div>
 
         {/* 채팅 메시지 */}

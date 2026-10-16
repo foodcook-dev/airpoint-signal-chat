@@ -55,7 +55,7 @@ interface ChatBubbleAvatarProps {
 }
 
 const ChatBubbleAvatar: React.FC<ChatBubbleAvatarProps> = ({ src, className }) => (
-  <Avatar className={cn('h-11 w-11 shadow-sm', className)}>
+  <Avatar className={cn('border-border/60 h-11 w-11 border shadow-sm', className)}>
     <AvatarImage src={src} alt="Avatar" />
     <AvatarFallback className="bg-white px-1">
       <img src={logoPng} alt="logo" className="max-w-full" />
@@ -64,10 +64,10 @@ const ChatBubbleAvatar: React.FC<ChatBubbleAvatarProps> = ({ src, className }) =
 );
 
 // ChatBubbleMessage
-const chatBubbleMessageVariants = cva('px-5 py-3 shadow-sm backdrop-blur-sm', {
+const chatBubbleMessageVariants = cva('px-5 py-3', {
   variants: {
     variant: {
-      received: 'rounded-2xl rounded-br-md shadow-sm bg-foreground text-contrast',
+      received: 'border-border/60 bg-foreground text-contrast rounded-2xl rounded-br-md border shadow-sm',
       sent: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl rounded-br-md shadow-sm',
     },
     layout: {
@@ -86,6 +86,9 @@ interface ChatBubbleMessageProps
   isLoading?: boolean;
 }
 
+// 기존엔 다크모드 여부를 document.documentElement에서 직접 읽어 인라인 style로
+// 배경색을 덮어썼음 — 테마 전환에 반응하지 않는 데다 bg-foreground(CSS 변수 기반, 이미
+// 다크모드 대응)를 무력화하는 중복 처리였어서 제거. 이제 클래스만으로 테마를 따라감.
 const ChatBubbleMessage = React.forwardRef<HTMLDivElement, ChatBubbleMessageProps>(
   ({ className, variant, layout, isLoading = false, children, ...props }, ref) => (
     <div
@@ -93,13 +96,6 @@ const ChatBubbleMessage = React.forwardRef<HTMLDivElement, ChatBubbleMessageProp
         chatBubbleMessageVariants({ variant, layout, className }),
         'max-w-full text-sm leading-relaxed break-words whitespace-pre-wrap',
       )}
-      style={{
-        backgroundColor: variant === 'received' ? 'white' : undefined,
-        ...(document.documentElement.classList.contains('dark') &&
-          variant === 'received' && {
-            backgroundColor: 'rgb(31 41 55)',
-          }),
-      }}
       ref={ref}
       {...props}
     >
@@ -144,7 +140,7 @@ const ChatBubbleAction: React.FC<ChatBubbleActionProps> = ({
   <Button
     variant={variant}
     size={size}
-    className={cn('hover:bg-accent h-8 w-8 rounded-md transition-colors', className)}
+    className={cn('hover:bg-button-background h-8 w-8 rounded-md transition-colors', className)}
     onClick={onClick}
     {...props}
   >
@@ -171,7 +167,7 @@ const ChatBubbleActionWrapper = React.forwardRef<HTMLDivElement, ChatBubbleActio
       {...props}
     >
       {' '}
-      <div className="bg-foreground text-contrast border-border/50 flex gap-1 rounded-lg border p-1 shadow-lg backdrop-blur-sm">
+      <div className="bg-foreground text-contrast border-border/50 flex flex-col gap-1 rounded-lg border p-1 shadow-lg">
         {children}
       </div>
     </div>
