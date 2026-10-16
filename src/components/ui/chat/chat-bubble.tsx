@@ -4,6 +4,7 @@ import { cn } from '@/libs/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
 import logoPng from '@/assets/images/app_logo.png';
 
 const chatBubbleVariant = cva('flex gap-3 max-w-[90%] items-end relative group mb-4', {
@@ -122,7 +123,7 @@ const ChatBubbleTimestamp: React.FC<ChatBubbleTimestampProps> = ({
     className={cn('text-contrast/70 flex items-center justify-end text-left text-xs', className)}
     {...props}
   >
-    {format(timestamp, 'yyyy-MM-dd HH:mm')}
+    {format(timestamp, 'yyyy년 MM월 dd일 a hh:mm', { locale: ko })}
   </div>
 );
 

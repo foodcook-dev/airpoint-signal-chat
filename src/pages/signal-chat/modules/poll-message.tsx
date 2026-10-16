@@ -1,7 +1,7 @@
 import { Pin } from 'lucide-react';
-import { format } from 'date-fns';
 import { ChatBubbleMessage } from '@/components/ui/chat/chat-bubble';
 import { ChatMessage } from '@/pages/signal-chat/types';
+import { formatSignalDate } from '@/pages/signal-chat/utils';
 
 export function PollResultMessage({
   pollResult,
@@ -104,10 +104,9 @@ export function PollMessage({
             </div>
             <span className="text-contrast text-sm font-semibold">{title}</span>
           </div>
-          <span className="text-placeholder text-[10px]">{`${format(
+          <span className="text-placeholder text-[10px]">{`${formatSignalDate(
             createdAt,
-            'yyyy-MM-dd HH:mm',
-          )} ~ ${format(end_date, 'yyyy-MM-dd HH:mm')}`}</span>
+          )} ~ ${formatSignalDate(end_date)}`}</span>
         </div>
 
         {/* 투표 Content */}

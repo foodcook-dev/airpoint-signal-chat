@@ -9,10 +9,10 @@ import {
   Send,
   MessageSquare,
 } from 'lucide-react';
-import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/libs/utils';
+import { formatSignalDate, formatCommentTime } from '@/pages/signal-chat/utils';
 import likePng from '@/assets/images/signal_like.png';
 import goodPng from '@/assets/images/signal_good.png';
 import checkPng from '@/assets/images/signal_check.png';
@@ -83,7 +83,7 @@ export default function CommentSection({ selectedChat, onClose }: CommentSection
           </div>
           <div>
             <p className="text-contrast/90 text-xs font-semibold">에어포인트</p>
-            <p className="text-contrast/70 text-[10px]">{format(created_at, 'yyyy-MM-dd HH:mm')}</p>
+            <p className="text-contrast/70 text-[10px]">{formatSignalDate(created_at)}</p>
           </div>
         </div>
 
@@ -198,7 +198,7 @@ export default function CommentSection({ selectedChat, onClose }: CommentSection
                         {nickname}
                       </p>
                       <div className="text-contrast/60 flex gap-1 text-[10px] whitespace-nowrap">
-                        <p>{format(created_at, 'yyyy-MM-dd HH:mm')}</p>
+                        <p>{formatCommentTime(created_at)}</p>
                         {is_edited && <p>(수정됨)</p>}
                       </div>
                       {reported_count > 0 && (
