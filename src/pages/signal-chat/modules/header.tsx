@@ -1,9 +1,13 @@
 // import { ThemeToggle } from '@/components/modules/theme-toggle';
 import React, { useState } from 'react';
+import { NavLink } from 'react-router-dom';
 import logoPng from '@/assets/images/app_logo.png';
 import { useQuery } from '@tanstack/react-query';
 import createAxios from '@/libs/create-axios-instance';
-import { Info } from 'lucide-react';
+import { Crown, Info, Users } from 'lucide-react';
+import { cn } from '@/libs/utils';
+import { SIGNAL_CHANNELS } from '@/pages/signal-chat/constants';
+import type { SignalChannel } from '@/pages/signal-chat/types';
 
 function Tooltip({ children, text }: { children: React.ReactNode; text: string }) {
   const [show, setShow] = useState(false);
@@ -15,7 +19,7 @@ function Tooltip({ children, text }: { children: React.ReactNode; text: string }
     >
       {children}
       {show && (
-        <span className="absolute top-full left-22 z-10 mt-1 w-max -translate-x-1/2 rounded bg-black px-2 py-1 text-xs text-white shadow">
+        <span className="absolute top-full right-0 z-10 mt-1 w-max rounded bg-black px-2 py-1 text-xs text-white shadow">
           {text}
         </span>
       )}
@@ -23,9 +27,12 @@ function Tooltip({ children, text }: { children: React.ReactNode; text: string }
   );
 }
 
-export default function Header() {
+function ChannelTab({ channel, isActive }: { channel: SignalChannel; isActive: boolean }) {
+  const config = SIGNAL_CHANNELS[channel];
+
+  // TODO: 채널별 API가 준비되면 channel 값을 요청에 반영 (현재는 두 채널 모두 동일 API 사용)
   const { data: activeUserCount } = useQuery({
-    queryKey: ['user'],
+    queryKey: ['user', channel],
     queryFn: () =>
       createAxios({
         method: 'get',
@@ -35,25 +42,55 @@ export default function Header() {
   });
 
   return (
-    <div className="bg-foreground/95 border-border/50 fixed top-4 left-4 z-50 rounded-2xl border px-4 py-4 shadow-lg backdrop-blur-sm">
-      <div className="flex-row items-center">
-        <div className="border-border mb-2 flex items-center gap-3 border-b pb-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white px-1">
+    <NavLink
+      to={`/chat/${channel}`}
+      className={cn(
+        'flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-all duration-150',
+        isActive
+          ? config.tabActiveClass
+          : 'text-contrast/65! hover:bg-foreground hover:text-contrast! border-transparent',
+      )}
+    >
+      {channel === 'premium' && <Crown className="size-4" />}
+      {config.label}
+      <span
+        className={cn(
+          'flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
+          isActive ? config.badgeClass : 'bg-button-background text-contrast/60',
+        )}
+      >
+        <Users className="size-3" />
+        {activeUserCount?.connected_count || 0}
+      </span>
+    </NavLink>
+  );
+}
+
+export default function Header({ channel }: { channel: SignalChannel }) {
+  return (
+    <div className="bg-background border-border flex flex-shrink-0 items-center justify-between gap-4 border-b px-4 py-3">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <div className="border-border flex h-10 w-10 items-center justify-center rounded-full border bg-white px-1">
             <img src={logoPng} alt="logo" className="max-w-full" />
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col">
             <p className="text-contrast text-sm font-semibold">관리자 시그널 채팅</p>
-            <p className="text-contrast text-xs">메시지를 작성하고 전달하세요.</p>
+            <p className="text-contrast/60 text-xs">메시지를 작성하고 전달하세요.</p>
           </div>
         </div>
-        <div className="flex items-center justify-center gap-2 rounded-lg bg-blue-50 py-1 text-xs font-medium text-blue-700">
-          <Tooltip text="현재 시그널 채팅에 접속해 있는 사용자 수입니다.">
-            <Info className="h-4 w-4 cursor-pointer text-blue-400" />
-          </Tooltip>
-          {/* <ThemeToggle /> */}
-          <span>{`현재 ${activeUserCount?.connected_count || 0}명 접속중`}</span>
-        </div>
+
+        <nav className="border-border flex items-center gap-1 border-l pl-4">
+          {(Object.keys(SIGNAL_CHANNELS) as SignalChannel[]).map((key) => (
+            <ChannelTab key={key} channel={key} isActive={key === channel} />
+          ))}
+        </nav>
       </div>
+
+      <Tooltip text="탭의 숫자는 채널별 현재 접속 중인 사용자 수입니다.">
+        <Info className="h-4 w-4 cursor-pointer text-blue-400" />
+      </Tooltip>
+      {/* <ThemeToggle /> */}
     </div>
   );
 }

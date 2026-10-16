@@ -1,7 +1,18 @@
 import { useState } from 'react';
-import { X, MessageSquareOff, UserX, Trash2, RefreshCw } from 'lucide-react';
+import {
+  X,
+  MessageSquareOff,
+  UserX,
+  Trash2,
+  RefreshCw,
+  Reply,
+  Send,
+  MessageSquare,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/libs/utils';
 import likePng from '@/assets/images/signal_like.png';
 import goodPng from '@/assets/images/signal_good.png';
 import checkPng from '@/assets/images/signal_check.png';
@@ -33,12 +44,21 @@ export default function CommentSection({ selectedChat, onClose }: CommentSection
     handleDisableComment,
     handleBlockUser,
     handleConfirmBlock,
+    newComment,
+    setNewComment,
+    handleSubmitComment,
+    replyTarget,
+    replyValue,
+    setReplyValue,
+    handleOpenReply,
+    handleCancelReply,
+    handleSubmitReply,
   } = useCommentHandler({
     selectedChat,
   });
 
   return (
-    <div className="border-border/80 bg-background flex h-screen w-[450px] flex-col border">
+    <div className="border-border/80 bg-background flex h-screen w-[450px] flex-col rounded-md border">
       {/* 헤더 */}
       <div className="border-border flex items-center justify-between border-b px-4 py-3">
         <div className="flex flex-col gap-1">
@@ -56,7 +76,7 @@ export default function CommentSection({ selectedChat, onClose }: CommentSection
       </div>
 
       {/* 선택된 채팅 메시지 */}
-      <div className="border-border flex max-h-[300px] flex-shrink-0 flex-col gap-6 overflow-y-auto border-b px-4 py-5">
+      <div className="bg-foreground/70 border-border/60 flex max-h-[300px] flex-shrink-0 flex-col gap-5 overflow-y-auto border-b px-4 py-5">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white px-1 shadow-sm">
             <img src={logoPng} alt="logo" className="max-w-full" />
@@ -96,22 +116,22 @@ export default function CommentSection({ selectedChat, onClose }: CommentSection
         )}
 
         {/* 리액션 */}
-        {reactions && (
-          <div className="border-border/50 text-contrast/80 flex justify-end gap-1 border-t pt-3 text-xs select-none">
-            {reactions?.like > 0 && (
-              <div className="flex items-center gap-1 rounded-sm p-1">
+        {reactions && (reactions.like > 0 || reactions.good > 0 || reactions.check > 0) && (
+          <div className="border-border/50 flex justify-end gap-1.5 border-t pt-3 text-xs select-none">
+            {reactions.like > 0 && (
+              <div className="bg-background border-border/50 text-contrast/80 flex items-center gap-1 rounded-full border px-2 py-1 shadow-xs">
                 <img src={likePng} alt="like" className="inline-block h-3.5" />
                 <span>{reactions.like}</span>
               </div>
             )}
-            {reactions?.good > 0 && (
-              <div className="flex items-center gap-1 rounded-sm p-1">
+            {reactions.good > 0 && (
+              <div className="bg-background border-border/50 text-contrast/80 flex items-center gap-1 rounded-full border px-2 py-1 shadow-xs">
                 <img src={goodPng} alt="good" className="inline-block h-3.5" />
                 <span>{reactions.good}</span>
               </div>
             )}
-            {reactions?.check > 0 && (
-              <div className="flex items-center gap-1 rounded-sm p-1">
+            {reactions.check > 0 && (
+              <div className="bg-background border-border/50 text-contrast/80 flex items-center gap-1 rounded-full border px-2 py-1 shadow-xs">
                 <img src={checkPng} alt="check" className="inline-block h-3.5" />
                 <span>{reactions.check}</span>
               </div>
@@ -121,15 +141,16 @@ export default function CommentSection({ selectedChat, onClose }: CommentSection
       </div>
 
       {/* 댓글 리스트 헤더 */}
-      <div className="bg-foreground/70 flex items-center justify-between px-4 py-3">
-        <p className="text-contrast/80 text-xs font-medium">전체 댓글 {commentCount}개</p>
+      <div className="bg-foreground flex items-center justify-between px-4 py-2.5">
+        <p className="text-contrast/80 text-xs font-medium">댓글 {commentCount}개</p>
         <Button
           variant="ghost"
           size="icon"
-          className="text-contrast hover:bg-foreground/60 h-5 w-5"
+          className="text-contrast/60 hover:bg-foreground/60 hover:text-contrast h-6 w-6"
           onClick={() => commentRefetch()}
+          title="새로고침"
         >
-          <RefreshCw className="size-4" />
+          <RefreshCw className="size-3.5" />
         </Button>
       </div>
 
@@ -159,16 +180,16 @@ export default function CommentSection({ selectedChat, onClose }: CommentSection
               }) => (
                 <div
                   key={id}
-                  className="border-border/60 hover:bg-foreground/40 border-b px-4 py-4"
+                  className="border-border/60 hover:bg-foreground/40 group border-b px-4 py-3"
                 >
                   {deleted_at && (
-                    <div className="text-contrast/50 mb-2 flex items-center gap-0.5">
+                    <div className="text-contrast/50 mb-1 flex items-center gap-0.5">
                       <Trash2 className="size-3" />
                       <span className="text-[10px]">삭제된 댓글입니다.</span>
                     </div>
                   )}
-                  <div className="mb-2 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2">
                       <p
                         className={`truncate text-xs font-medium ${
                           deleted_at ? 'text-contrast/50' : 'text-contrast/90'
@@ -176,13 +197,13 @@ export default function CommentSection({ selectedChat, onClose }: CommentSection
                       >
                         {nickname}
                       </p>
-                      <div className="text-contrast/70 flex gap-1 text-[10px] whitespace-nowrap">
+                      <div className="text-contrast/60 flex gap-1 text-[10px] whitespace-nowrap">
                         <p>{format(created_at, 'yyyy-MM-dd HH:mm')}</p>
                         {is_edited && <p>(수정됨)</p>}
                       </div>
                       {reported_count > 0 && (
                         <span
-                          className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${'bg-red-500/20 text-red-600'}`}
+                          className="rounded-full bg-red-500/15 px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap text-red-600"
                           title={`누적 신고 ${reported_count}회`}
                         >
                           신고 {reported_count}회
@@ -190,11 +211,11 @@ export default function CommentSection({ selectedChat, onClose }: CommentSection
                       )}
                     </div>
 
-                    <div className="flex items-center gap-0.5">
+                    <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-contrast/60 hover:bg-foreground/60 h-6 w-6 hover:text-red-500"
+                        className="text-contrast/50 hover:bg-foreground/60 h-6 w-6 hover:text-red-500"
                         onClick={() => handleDisableComment(id, deleted_at)}
                         title="댓글 비활성화"
                       >
@@ -203,7 +224,7 @@ export default function CommentSection({ selectedChat, onClose }: CommentSection
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-contrast/60 hover:bg-foreground/60 h-6 w-6 hover:text-red-500"
+                        className="text-contrast/50 hover:bg-foreground/60 h-6 w-6 hover:text-red-500"
                         onClick={() => handleBlockUser(user_id, nickname)}
                         title="사용자 댓글 작성 제한"
                       >
@@ -212,7 +233,7 @@ export default function CommentSection({ selectedChat, onClose }: CommentSection
                     </div>
                   </div>
                   <div
-                    className={`py-1 text-xs leading-relaxed break-words whitespace-pre-wrap ${
+                    className={`py-0.5 text-xs leading-relaxed break-words whitespace-pre-wrap ${
                       deleted_at ? 'text-contrast/40' : 'text-contrast'
                     }`}
                   >
@@ -238,12 +259,100 @@ export default function CommentSection({ selectedChat, onClose }: CommentSection
                       </div>
                     </>
                   )}
+
+                  {/* 답글 달기 */}
+                  {!deleted_at && (
+                    <button
+                      type="button"
+                      onClick={() => handleOpenReply(id, nickname)}
+                      className={cn(
+                        'text-contrast/50 hover:text-primary mt-1 flex items-center gap-1 text-[11px] font-medium transition-colors',
+                        replyTarget?.commentId === id && 'text-primary',
+                      )}
+                    >
+                      <Reply className="size-3" />
+                      답글 달기
+                    </button>
+                  )}
+
+                  {/* 대댓글 입력창 — 박스 대신 들여쓰기 + 연결선으로 표현 */}
+                  {replyTarget?.commentId === id && (
+                    <div className="border-border/60 mt-2 ml-1 flex flex-col gap-2 border-l-2 pl-3">
+                      <span className="bg-primary/10 text-primary inline-flex w-fit items-center gap-1 rounded-full py-0.5 pr-1 pl-2 text-[11px] font-medium">
+                        @{replyTarget.nickname}
+                        <button
+                          type="button"
+                          onClick={handleCancelReply}
+                          className="hover:bg-primary/20 rounded-full p-0.5"
+                          title="답글 취소"
+                        >
+                          <X className="size-3" />
+                        </button>
+                      </span>
+                      <Textarea
+                        autoFocus
+                        value={replyValue}
+                        onChange={(e) => setReplyValue(e.target.value)}
+                        placeholder={`${replyTarget.nickname}님에게 답글을 남겨보세요.`}
+                        className="bg-foreground/40 border-border/60 min-h-14 resize-none text-xs shadow-none"
+                      />
+                      <div className="flex justify-end gap-1.5">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-contrast/60 h-7 px-2.5 text-[11px]"
+                          onClick={handleCancelReply}
+                        >
+                          취소
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="h-7 gap-1 px-2.5 text-[11px]"
+                          disabled={!replyValue.trim()}
+                          onClick={handleSubmitReply}
+                        >
+                          <Send className="size-3" />
+                          답글 등록
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ),
             )}
             <div ref={commentObserverRef} className="h-4" />
           </>
         )}
+        {!isFetching && commentList.length === 0 && (
+          <div className="text-contrast/40 flex flex-1 flex-col items-center justify-center gap-2 py-10">
+            <MessageSquare className="size-7" strokeWidth={1.5} />
+            <p className="text-xs">아직 작성된 댓글이 없습니다.</p>
+          </div>
+        )}
+      </div>
+
+      {/* 관리자 댓글 작성 */}
+      <div className="border-border bg-background flex-shrink-0 border-t p-3">
+        <div className="border-border focus-within:border-primary/60 focus-within:ring-primary/20 flex items-end gap-2 rounded-xl border p-1.5 pl-2.5 shadow-xs transition-colors focus-within:ring-2">
+          <div className="border-border/60 flex h-6 w-6 flex-shrink-0 items-center justify-center self-center rounded-full border bg-white px-1">
+            <img src={logoPng} alt="logo" className="max-w-full" />
+          </div>
+          <Textarea
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="관리자 댓글을 작성하세요."
+            className="max-h-24 min-h-9 flex-1 resize-none border-0 bg-transparent py-1.5 text-xs shadow-none focus-visible:ring-0"
+          />
+          <Button
+            size="icon"
+            className="h-8 w-8 flex-shrink-0 rounded-lg"
+            disabled={!newComment.trim()}
+            onClick={handleSubmitComment}
+            title="댓글 등록"
+          >
+            <Send className="size-3.5" />
+          </Button>
+        </div>
       </div>
 
       {selectedUser && (

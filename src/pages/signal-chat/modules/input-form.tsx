@@ -1,7 +1,9 @@
-import { Send, ImageIcon, X } from 'lucide-react';
+import { Send, ImageIcon, X, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatInput } from '@/components/ui/chat/chat-input';
-import { CHAT_CONSTANTS } from '@/pages/signal-chat/constants';
+import { CHAT_CONSTANTS, SIGNAL_CHANNELS } from '@/pages/signal-chat/constants';
+import type { SignalChannel } from '@/pages/signal-chat/types';
+import { cn } from '@/libs/utils';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -39,6 +41,7 @@ function ImagePreview({ images, onRemove }: ImagePreviewProps) {
 }
 
 interface InputFormProps {
+  channel: SignalChannel;
   inputValue: string;
   selectedImages: Array<{
     url: string;
@@ -59,6 +62,7 @@ interface InputFormProps {
 }
 
 export default function InputForm({
+  channel,
   inputValue,
   selectedImages,
   isSubmitting,
@@ -73,17 +77,34 @@ export default function InputForm({
   onAutoReactionToggle,
   onMaxAutoReactionsChange,
 }: InputFormProps) {
+  const channelConfig = SIGNAL_CHANNELS[channel];
+
   return (
     <div className="bg-background flex-shrink-0 p-2">
       <form
         onSubmit={onSubmit}
-        className="border-border overflow-hidden rounded-lg border focus-within:ring-1 focus-within:ring-blue-500"
+        className={cn(
+          'overflow-hidden rounded-lg border-2 focus-within:ring-1',
+          channelConfig.inputRingClass,
+        )}
       >
+        {/* 발송 대상 채널 표시 (오발송 방지) */}
+        <div
+          className={cn(
+            'flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold',
+            channelConfig.badgeClass,
+          )}
+        >
+          {channel === 'premium' && <Crown className="size-3.5" />}
+          {channelConfig.label} 채널에 발송됩니다
+          <span className="font-normal opacity-80">· {channelConfig.description}</span>
+        </div>
+
         {/* 이미지 미리보기 */}
         <ImagePreview images={selectedImages} onRemove={onImageRemove} />
 
         <ChatInput
-          placeholder="내용을 작성하세요."
+          placeholder={`${channelConfig.label} 채널에 보낼 내용을 작성하세요.`}
           className="min-h-16 resize-none border-0 p-2 shadow-none focus-visible:ring-0"
           value={inputValue}
           onChange={(e) => onInputChange(e.target.value)}
@@ -152,11 +173,11 @@ export default function InputForm({
 
             <Button
               type="submit"
-              className="gap-1.5 bg-blue-600 text-white shadow-xs hover:bg-blue-700"
+              className={cn('gap-1.5 text-white shadow-xs', channelConfig.sendButtonClass)}
               disabled={(!inputValue.trim() && selectedImages.length === 0) || isSubmitting}
             >
               <Send className="size-3.5" />
-              {isSubmitting ? '전송 중' : '발송'}
+              {isSubmitting ? '전송 중' : `${channelConfig.shortLabel} 채널에 발송`}
             </Button>
           </div>
         </div>

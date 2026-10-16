@@ -77,3 +77,5 @@ export interface CommentResponse {
   next: string;
   results: Comment[];
 }
+
+export type SignalChannel = 'premium' | 'free';

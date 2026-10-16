@@ -2,29 +2,47 @@ import { useState, useRef, useCallback } from 'react';
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import createAxios from '@/libs/create-axios-instance';
 import useAlertStore from '@/store/alert';
-import { SelectedImage, ChatResponse, ChatMessage } from '@/pages/signal-chat/types';
+import useSignalDraftStore from '@/store/signal-draft';
+import {
+  SelectedImage,
+  ChatResponse,
+  ChatMessage,
+  SignalChannel,
+} from '@/pages/signal-chat/types';
 import { CHAT_CONSTANTS } from '@/pages/signal-chat/constants';
 import { validateImageFile } from '@/pages/signal-chat/utils';
 
-export const useSignalHandler = () => {
+export const useSignalHandler = (channel: SignalChannel) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollTriggerRef = useRef<() => void>(null);
   const { showAlert } = useAlertStore();
 
-  const [inputValue, setInputValue] = useState<string>('');
-  const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
-  const [isAutoReactionEnabled, setIsAutoReactionEnabled] = useState<boolean>(true);
-  const [maxAutoReactions, setMaxAutoReactions] = useState<number>(50);
+  const draft = useSignalDraftStore((state) => state.drafts[channel]);
+  const updateDraft = useSignalDraftStore((state) => state.updateDraft);
+  const resetDraft = useSignalDraftStore((state) => state.resetDraft);
+  const { inputValue, selectedImages, isAutoReactionEnabled, maxAutoReactions } = draft;
+
+  const setInputValue = (value: string) => updateDraft(channel, { inputValue: value });
+  const setIsAutoReactionEnabled = (enabled: boolean) =>
+    updateDraft(channel, { isAutoReactionEnabled: enabled });
+  const setMaxAutoReactions = (value: number) => updateDraft(channel, { maxAutoReactions: value });
+  const setSelectedImages = (updater: (prev: SelectedImage[]) => SelectedImage[]) =>
+    updateDraft(channel, (prev) => ({ selectedImages: updater(prev.selectedImages) }));
+
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [selectedChat, setSelectedChat] = useState<ChatMessage | null>(null);
 
+  // 유료 채널은 audience=paid, 무료 채널은 audience=free로 조회
+  const audience = channel === 'premium' ? 'paid' : 'free';
+
   const signalResponse = useInfiniteQuery<ChatResponse>({
-    queryKey: ['signal'],
+    queryKey: ['signal', channel],
     queryFn: ({ pageParam = 1 }) =>
       createAxios({
         method: 'get',
         endpoint: `/talk/signal_talks/admin/`,
         params: {
+          audience,
           page: pageParam as number,
           page_size: 10,
         },
@@ -79,8 +97,7 @@ export const useSignalHandler = () => {
 
       await sendChatMutate(formData);
 
-      setInputValue('');
-      setSelectedImages([]);
+      resetDraft(channel);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }

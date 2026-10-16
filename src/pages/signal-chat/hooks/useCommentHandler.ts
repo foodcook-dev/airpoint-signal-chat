@@ -17,6 +17,15 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
     null,
   );
 
+  // 신규 댓글 입력
+  const [newComment, setNewComment] = useState('');
+
+  // 대댓글 입력 (한 번에 하나의 댓글에만 답글을 달 수 있도록 단일 상태로 관리)
+  const [replyTarget, setReplyTarget] = useState<{ commentId: number; nickname: string } | null>(
+    null,
+  );
+  const [replyValue, setReplyValue] = useState('');
+
   const commentResponse = useInfiniteQuery<CommentResponse>({
     queryKey: ['comment', selectedChat?.id],
     queryFn: ({ pageParam = 1 }) =>
@@ -103,6 +112,32 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
     await blockUserRequest(data);
   };
 
+  // 답글 달기 버튼 클릭 — 같은 댓글을 다시 누르면 입력창을 닫음
+  const handleOpenReply = (commentId: number, nickname: string) => {
+    setReplyTarget((prev) => (prev?.commentId === commentId ? null : { commentId, nickname }));
+    setReplyValue('');
+  };
+
+  const handleCancelReply = () => {
+    setReplyTarget(null);
+    setReplyValue('');
+  };
+
+  // TODO: 답글 작성 API 연동 — 현재는 UI/UX만 구현
+  const handleSubmitReply = () => {
+    if (!replyValue.trim()) return;
+    showAlert('답글 작성 기능은 준비 중입니다.');
+    setReplyValue('');
+    setReplyTarget(null);
+  };
+
+  // TODO: 댓글 작성 API 연동 — 현재는 UI/UX만 구현
+  const handleSubmitComment = () => {
+    if (!newComment.trim()) return;
+    showAlert('댓글 작성 기능은 준비 중입니다.');
+    setNewComment('');
+  };
+
   // Intersection Observer를 사용한 무한 스크롤
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -154,5 +189,18 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
     handleDisableComment,
     handleBlockUser,
     handleConfirmBlock,
+
+    // 신규 댓글 작성
+    newComment,
+    setNewComment,
+    handleSubmitComment,
+
+    // 대댓글 작성
+    replyTarget,
+    replyValue,
+    setReplyValue,
+    handleOpenReply,
+    handleCancelReply,
+    handleSubmitReply,
   };
 };

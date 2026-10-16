@@ -112,18 +112,22 @@ export function DefaultMessage({
             <span className="text-contrast text-sm">{message}</span>
           )}
 
-          {/* 댓글 수 & 댓글 창 열기 */}
-          {commentCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClickCommentCount}
-              className="border-border mt-2 w-full justify-start gap-4 rounded-none border-t px-0 pt-2"
-            >
-              <span className="text-primary text-xs">댓글 {commentCount}개</span>
-              <span className="text-contrast/50 text-[10px]">댓글 전체 보기</span>
-            </Button>
-          )}
+          {/* 댓글 수 & 댓글 창 열기 — 관리자가 직접 댓글을 작성할 수 있어 0개여도 열 수 있어야 함 */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClickCommentCount}
+            className="border-border mt-2 w-full justify-start gap-4 rounded-none border-t px-0 pt-2"
+          >
+            {commentCount > 0 ? (
+              <>
+                <span className="text-primary text-xs">댓글 {commentCount}개</span>
+                <span className="text-contrast/50 text-[10px]">댓글 전체 보기</span>
+              </>
+            ) : (
+              <span className="text-contrast/50 text-xs">댓글 작성하기</span>
+            )}
+          </Button>
         </ChatBubbleMessage>
 
         {/* OG 태그 */}

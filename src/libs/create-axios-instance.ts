@@ -14,12 +14,12 @@ instance.interceptors.request.use(
 
     const token = getCurrentToken();
 
-    if (token) {
-      newConfig.headers.Authorization = `Bearer ${token}`;
-    }
+    // if (token) {
+    //   newConfig.headers.Authorization = `Bearer ${token}`;
+    // }
 
-    // newConfig.headers.Authorization =
-    //   'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYxMTMzOTAwLCJpYXQiOjE3NjEwOTc5MDAsImp0aSI6ImE2ZDUxOTVmZWE4ZTQ0OThiNzQzYzZmMThkNDNjMTljIiwidXNlcm5hbWUiOjF9.vyNIr5RABDW9a96YVurRfZ1tvKhUEpvb76dFSZ3hQf4';
+    newConfig.headers.Authorization =
+      'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkyMTQ1NDAxLCJpYXQiOjE3OTIxMDk0MDEsImp0aSI6ImIyMDVjOTg2ZTE5YTRhYTFiMDZiMTZmZjM2YmU5YWE5IiwidXNlcm5hbWUiOjF9.nYewPAYJJP0S3SzLwCmSoiJ_96XdBH3N2uBcuITcWlY';
 
     return newConfig;
   },

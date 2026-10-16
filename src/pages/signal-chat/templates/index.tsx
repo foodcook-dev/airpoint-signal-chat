@@ -1,12 +1,12 @@
 import { ChatMessageList } from '@/components/ui/chat/chat-message-list';
 import { useSignalHandler } from '@/pages/signal-chat/hooks/useSignalHandler';
-import type { ChatMessage } from '@/pages/signal-chat/types';
+import type { ChatMessage, SignalChannel } from '@/pages/signal-chat/types';
 import Header from '@/pages/signal-chat/modules/header';
 import Message from '@/pages/signal-chat/modules/message';
 import InputForm from '../modules/input-form';
 import CommentSection from '../modules/comment-section';
 
-export default function SignalChat() {
+export default function SignalChat({ channel }: { channel: SignalChannel }) {
   const {
     scrollTriggerRef,
     selectedChat,
@@ -33,7 +33,7 @@ export default function SignalChat() {
     loadMoreMessages,
     hasNextPage,
     isFetchingNextPage,
-  } = useSignalHandler();
+  } = useSignalHandler(channel);
 
   const handleOpenThread = (message: ChatMessage) => setSelectedChat(message);
   const handleCloseThread = () => setSelectedChat(null);
@@ -45,7 +45,7 @@ export default function SignalChat() {
           selectedChat ? 'w-[calc(100vw-450px)]' : 'w-[100vw]'
         }`}
       >
-        <Header />
+        <Header channel={channel} />
         <ChatMessageList
           onLoadMore={loadMoreMessages}
           hasNextPage={hasNextPage}
@@ -65,6 +65,7 @@ export default function SignalChat() {
             ))}
         </ChatMessageList>
         <InputForm
+          channel={channel}
           inputValue={inputValue}
           selectedImages={selectedImages}
           isSubmitting={isSubmitting}
