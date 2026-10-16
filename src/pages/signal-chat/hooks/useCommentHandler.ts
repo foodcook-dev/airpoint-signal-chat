@@ -4,7 +4,8 @@ import useFetch from '@/hooks/useFetch';
 import createAxios from '@/libs/create-axios-instance';
 import useAlertStore from '@/store/alert';
 import useConfirmStore from '@/store/confirm';
-import type { ChatMessage, CommentResponse } from '@/pages/signal-chat/types';
+import { validateImageFile } from '@/pages/signal-chat/utils';
+import type { ChatMessage, CommentResponse, SelectedImage } from '@/pages/signal-chat/types';
 
 export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage }) => {
   const { showAlert } = useAlertStore();
@@ -19,12 +20,55 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
 
   // 신규 댓글 입력
   const [newComment, setNewComment] = useState('');
+  const [commentImage, setCommentImage] = useState<SelectedImage | null>(null);
+  const commentFileInputRef = useRef<HTMLInputElement>(null);
 
-  // 대댓글 입력 (한 번에 하나의 댓글에만 답글을 달 수 있도록 단일 상태로 관리)
+  // 대댓글 입력 (한 번에 하나의 댓글에만 대댓글을 달 수 있도록 단일 상태로 관리)
   const [replyTarget, setReplyTarget] = useState<{ commentId: number; nickname: string } | null>(
     null,
   );
   const [replyValue, setReplyValue] = useState('');
+  const [replyImage, setReplyImage] = useState<SelectedImage | null>(null);
+  const replyFileInputRef = useRef<HTMLInputElement>(null);
+
+  // 댓글/대댓글 이미지 첨부는 최대 1장
+  const readImageFile = (file: File, onLoaded: (image: SelectedImage) => void) => {
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      showAlert(validationError);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      if (result) onLoaded({ url: result, name: file.name });
+    };
+    reader.onerror = () => {
+      showAlert(`${file.name} 파일 읽기에 실패했습니다.`);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCommentImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    readImageFile(file, setCommentImage);
+    e.target.value = '';
+  };
+
+  const handleCommentImageRemove = () => setCommentImage(null);
+  const handleCommentImageButtonClick = () => commentFileInputRef.current?.click();
+
+  const handleReplyImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    readImageFile(file, setReplyImage);
+    e.target.value = '';
+  };
+
+  const handleReplyImageRemove = () => setReplyImage(null);
+  const handleReplyImageButtonClick = () => replyFileInputRef.current?.click();
 
   const commentResponse = useInfiniteQuery<CommentResponse>({
     queryKey: ['comment', selectedChat?.id],
@@ -112,30 +156,37 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
     await blockUserRequest(data);
   };
 
-  // 답글 달기 버튼 클릭 — 같은 댓글을 다시 누르면 입력창을 닫음
+  // 대댓글 달기 버튼 클릭 — 같은 대상(댓글 또는 그 안의 특정 대댓글)을 다시 누르면 입력창을 닫고,
+  // 같은 스레드 안의 다른 대댓글을 누르면 태그만 바꿔서 입력창을 유지한다.
   const handleOpenReply = (commentId: number, nickname: string) => {
-    setReplyTarget((prev) => (prev?.commentId === commentId ? null : { commentId, nickname }));
+    setReplyTarget((prev) =>
+      prev?.commentId === commentId && prev?.nickname === nickname ? null : { commentId, nickname },
+    );
     setReplyValue('');
+    setReplyImage(null);
   };
 
   const handleCancelReply = () => {
     setReplyTarget(null);
     setReplyValue('');
+    setReplyImage(null);
   };
 
-  // TODO: 답글 작성 API 연동 — 현재는 UI/UX만 구현
+  // TODO: 대댓글 작성 API 연동 — 현재는 UI/UX만 구현
   const handleSubmitReply = () => {
-    if (!replyValue.trim()) return;
-    showAlert('답글 작성 기능은 준비 중입니다.');
+    if (!replyValue.trim() && !replyImage) return;
+    showAlert('대댓글 작성 기능은 준비 중입니다.');
     setReplyValue('');
+    setReplyImage(null);
     setReplyTarget(null);
   };
 
   // TODO: 댓글 작성 API 연동 — 현재는 UI/UX만 구현
   const handleSubmitComment = () => {
-    if (!newComment.trim()) return;
+    if (!newComment.trim() && !commentImage) return;
     showAlert('댓글 작성 기능은 준비 중입니다.');
     setNewComment('');
+    setCommentImage(null);
   };
 
   // Intersection Observer를 사용한 무한 스크롤
@@ -194,6 +245,11 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
     newComment,
     setNewComment,
     handleSubmitComment,
+    commentImage,
+    commentFileInputRef,
+    handleCommentImageSelect,
+    handleCommentImageRemove,
+    handleCommentImageButtonClick,
 
     // 대댓글 작성
     replyTarget,
@@ -202,5 +258,10 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
     handleOpenReply,
     handleCancelReply,
     handleSubmitReply,
+    replyImage,
+    replyFileInputRef,
+    handleReplyImageSelect,
+    handleReplyImageRemove,
+    handleReplyImageButtonClick,
   };
 };

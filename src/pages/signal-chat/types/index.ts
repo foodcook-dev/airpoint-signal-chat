@@ -50,11 +50,30 @@ export interface Comment {
   nickname: string;
   message: string;
   images: string[];
+  replies: Reply[];
+  reply_to_id: null | number;
   reported_count: number;
   is_edited: boolean;
   deleted_at: boolean;
   created_at: string;
 }
+
+export type Reply = {
+  created_at: string;
+  deleted_at: boolean;
+  id: number;
+  images: string[];
+  is_edited: boolean;
+  main_comment_id: number;
+  message: string;
+  nickname: string;
+  reply_to_id: number;
+  reported_count: number;
+  signal_talk_id: number;
+  tag_nickname: string;
+  user_id: string;
+  username: string;
+};
 
 export interface SelectedImage {
   url: string;
