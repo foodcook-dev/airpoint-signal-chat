@@ -80,6 +80,8 @@ interface DefaultMessageProps {
   message: string;
   messageHtml?: string | null;
   commentCount?: number;
+  // 마지막으로 댓글 패널을 연 이후 새로 달린 댓글 수 (세션 내 로컬 계산 — 서버에 기록되는 값은 아님)
+  newCommentCount?: number;
   ogTags?: ChatMessage['og_tags'];
   contentImages?: ChatMessage['content_images'];
   reactions: ChatMessage['reactions'];
@@ -90,16 +92,21 @@ export function DefaultMessage({
   message,
   messageHtml,
   commentCount = 0,
+  newCommentCount = 0,
   ogTags,
   contentImages,
   reactions,
   onClickCommentCount,
 }: DefaultMessageProps) {
+  const hasNewComment = newCommentCount > 0;
+
   return (
     <>
       <div className="flex flex-col items-end gap-2">
         {/* 기본 메시지 */}
-        <ChatBubbleMessage>
+        <ChatBubbleMessage
+          className={hasNewComment ? 'border-[#FF7700] bg-[#FF7700]/5' : undefined}
+        >
           {/* 첨부된 이미지 */}
           <ContentImages images={contentImages || []} />
 
@@ -117,12 +124,16 @@ export function DefaultMessage({
             variant="ghost"
             size="sm"
             onClick={onClickCommentCount}
-            className="border-border mt-2 w-full justify-start gap-4 rounded-none border-t px-0 pt-2"
+            className="border-border mt-2 w-full justify-start gap-2 rounded-none border-t px-0 pt-2"
           >
             {commentCount > 0 ? (
               <>
-                <span className="text-primary text-xs">댓글 {commentCount}개</span>
-                <span className="text-contrast/50 text-[10px]">댓글 전체 보기</span>
+                <span className="text-primary text-xs">전체 댓글 {commentCount}개</span>
+                {hasNewComment && (
+                  <span className="rounded-full bg-[#FF7700] px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap text-white">
+                    새 댓글 1개
+                  </span>
+                )}
               </>
             ) : (
               <span className="text-contrast/50 text-xs">댓글 작성하기</span>

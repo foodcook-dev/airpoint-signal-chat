@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import { useInfiniteQuery } from '@tanstack/react-query';
-import useFetch from '@/hooks/useFetch';
-import createAxios from '@/libs/create-axios-instance';
+import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
+import {
+  getCommentsAdmin,
+  postDeactivateComment,
+  postCommentBanUser,
+} from '@/pages/signal-chat/api';
 import useAlertStore from '@/store/alert';
 import useConfirmStore from '@/store/confirm';
 import { validateImageFile } from '@/pages/signal-chat/utils';
 import type { ChatMessage, CommentResponse, SelectedImage } from '@/pages/signal-chat/types';
+import type ResponseError from '@/libs/response-error';
 
 export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage }) => {
   const { showAlert } = useAlertStore();
@@ -70,17 +74,15 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
   const handleReplyImageRemove = () => setReplyImage(null);
   const handleReplyImageButtonClick = () => replyFileInputRef.current?.click();
 
+  const handleMutationError = (e: ResponseError) => {
+    if (typeof e.error === 'string') showAlert(e.error);
+    else console.error(e);
+  };
+
   const commentResponse = useInfiniteQuery<CommentResponse>({
     queryKey: ['comment', selectedChat?.id],
     queryFn: ({ pageParam = 1 }) =>
-      createAxios({
-        method: 'get',
-        endpoint: `/talk/signal_talks/${selectedChat?.id}/comments/admin/`,
-        params: {
-          page: pageParam as number,
-          page_size: 10,
-        },
-      }),
+      getCommentsAdmin({ signalTalkId: selectedChat?.id, page: pageParam as number, pageSize: 10 }),
     getNextPageParam: (lastPage, pages) => {
       if (lastPage.next) return pages.length + 1;
       return undefined;
@@ -89,17 +91,13 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
     enabled: !!selectedChat?.id,
   });
 
-  const { request: disableCommentRequest } = useFetch<any, number>({
-    requestFn: (commentId) => {
-      return createAxios({
-        method: 'post',
-        endpoint: `/talk/signal_talks/comments/${commentId}/deactivate/`,
-      });
-    },
+  const { mutateAsync: disableCommentRequest } = useMutation({
+    mutationFn: (commentId: number) => postDeactivateComment(commentId),
     onSuccess: () => {
       showAlert('댓글이 비활성화되었습니다.');
       commentResponse.refetch();
     },
+    onError: handleMutationError,
   });
 
   const handleDisableComment = (commentId: number, isDeleted: boolean) => {
@@ -121,30 +119,13 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
     setBlockDialogOpen(true);
   };
 
-  const { request: blockUserRequest } = useFetch<
-    any,
-    {
-      userId: number;
-      reason: string;
-      blockedUntil: string;
-      memo: string;
-    }
-  >({
-    requestFn: (params) => {
-      return createAxios({
-        method: 'post',
-        endpoint: `/user/comment-ban-admin/`,
-        body: {
-          user_id: params.userId,
-          reason: params.reason,
-          blocked_until: params.blockedUntil,
-          memo: params.memo,
-        },
-      });
-    },
+  const { mutateAsync: blockUserRequest } = useMutation({
+    mutationFn: (params: { userId: number; reason: string; blockedUntil: string; memo: string }) =>
+      postCommentBanUser(params),
     onSuccess: () => {
       showAlert('사용자 댓글 작성이 제한되었습니다.');
     },
+    onError: handleMutationError,
   });
 
   const handleConfirmBlock = async (data: {

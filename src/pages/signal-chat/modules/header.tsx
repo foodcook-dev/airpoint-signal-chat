@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import logoPng from '@/assets/images/app_logo.png';
 import { useQuery } from '@tanstack/react-query';
-import createAxios from '@/libs/create-axios-instance';
+import { getActiveUserCount } from '@/pages/signal-chat/api';
 import { Crown, Info, Users, Bell } from 'lucide-react';
 import { cn } from '@/libs/utils';
 import { Button } from '@/components/ui/button';
@@ -37,11 +37,7 @@ function ChannelTab({ channel, isActive }: { channel: SignalChannel; isActive: b
   // TODO: 채널별 API가 준비되면 channel 값을 요청에 반영 (현재는 두 채널 모두 동일 API 사용)
   const { data: activeUserCount } = useQuery({
     queryKey: ['user', channel],
-    queryFn: () =>
-      createAxios({
-        method: 'get',
-        endpoint: `/talk/signal_talks/active_user_count/`,
-      }),
+    queryFn: () => getActiveUserCount(),
     refetchInterval: 5000,
   });
 

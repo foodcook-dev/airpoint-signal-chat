@@ -115,6 +115,9 @@ export default function SignalChat({ channel }: { channel: SignalChannel }) {
                   onOpenThread={handleOpenThread}
                   onToggleInvestmentNote={handleToggleInvestmentNote}
                   canPickInvestmentNote={canPickInvestmentNote}
+                  // TODO: 세션 로컬 "마지막으로 본 댓글 수" 비교 로직 보류 — 지금은 댓글이
+                  // 있는 모든 메시지를 새 댓글이 있는 것처럼 표시 (시안 공유용)
+                  newCommentCount={chat.comment_count}
                 />
               ))
           )}

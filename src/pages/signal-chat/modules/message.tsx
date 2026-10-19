@@ -17,6 +17,8 @@ interface SignalMessageProps {
   onToggleInvestmentNote?: (messageId: string) => void;
   // 투자노트는 프리미엄 채널에만 있는 기능 — 무료 채널에서는 버튼 자체를 숨김
   canPickInvestmentNote?: boolean;
+  // 마지막으로 댓글 패널을 연 이후 새로 달린 댓글 수
+  newCommentCount?: number;
 }
 
 export default function SignalMessage({
@@ -58,6 +60,7 @@ export default function SignalMessage({
         message={message}
         messageHtml={message_with_html}
         commentCount={comment_count}
+        newCommentCount={0}
         ogTags={og_tags}
         contentImages={content_images}
         reactions={reactions}

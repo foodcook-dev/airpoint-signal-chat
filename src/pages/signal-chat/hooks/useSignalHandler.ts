@@ -1,14 +1,9 @@
 import { useState, useRef, useCallback } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient, InfiniteData } from '@tanstack/react-query';
-import createAxios from '@/libs/create-axios-instance';
+import { getSignalTalksAdmin, postSignalTalk } from '@/pages/signal-chat/api';
 import useAlertStore from '@/store/alert';
 import useSignalDraftStore from '@/store/signal-draft';
-import {
-  SelectedImage,
-  ChatResponse,
-  ChatMessage,
-  SignalChannel,
-} from '@/pages/signal-chat/types';
+import { SelectedImage, ChatResponse, ChatMessage, SignalChannel } from '@/pages/signal-chat/types';
 import { CHAT_CONSTANTS } from '@/pages/signal-chat/constants';
 import { validateImageFile } from '@/pages/signal-chat/utils';
 
@@ -43,15 +38,7 @@ export const useSignalHandler = (channel: SignalChannel) => {
   const signalResponse = useInfiniteQuery<ChatResponse>({
     queryKey: signalQueryKey,
     queryFn: ({ pageParam = 1 }) =>
-      createAxios({
-        method: 'get',
-        endpoint: `/talk/signal_talks/admin/`,
-        params: {
-          audience,
-          page: pageParam as number,
-          page_size: 10,
-        },
-      }),
+      getSignalTalksAdmin({ audience, page: pageParam as number, pageSize: 10 }),
     getNextPageParam: (lastPage, pages) => {
       if (lastPage.next) return pages.length + 1;
       return undefined;
@@ -60,12 +47,7 @@ export const useSignalHandler = (channel: SignalChannel) => {
   });
 
   const { mutateAsync: sendChatMutate } = useMutation({
-    mutationFn: (formData: FormData) =>
-      createAxios({
-        method: 'post',
-        endpoint: `/talk/signal_talks/create/`,
-        body: formData,
-      }),
+    mutationFn: (formData: FormData) => postSignalTalk(formData),
   });
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -185,9 +167,7 @@ export const useSignalHandler = (channel: SignalChannel) => {
         pages: old.pages.map((page) => ({
           ...page,
           results: page.results.map((msg) =>
-            msg.id === messageId
-              ? { ...msg, is_investment_note: !msg.is_investment_note }
-              : msg,
+            msg.id === messageId ? { ...msg, is_investment_note: !msg.is_investment_note } : msg,
           ),
         })),
       };
