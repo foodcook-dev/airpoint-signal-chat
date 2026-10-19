@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Star } from 'lucide-react';
 import { ChatMessageList } from '@/components/ui/chat/chat-message-list';
-import { useSignalHandler } from '@/pages/signal-chat/hooks/useSignalHandler';
-import type { ChatMessage, SignalChannel } from '@/pages/signal-chat/types';
-import { cn } from '@/libs/utils';
-import Header from '@/pages/signal-chat/modules/header';
-import Message from '@/pages/signal-chat/modules/message';
-import InputForm from '../modules/input-form';
-import CommentSection from '../modules/comment-section';
+import { useSignalHandler } from '@/hooks/useSignalHandler';
+import type { ChatMessage, SignalChannel } from '@/types/signal';
+import { cn } from '@/libs/auth';
+import Header from '@/components/signal/header';
+import Message from '@/components/signal/message';
+import InputForm from '@/components/signal/input-form';
+import CommentSection from '@/components/signal/comment-section';
 
 export default function SignalChat({ channel }: { channel: SignalChannel }) {
   const {

@@ -7,7 +7,7 @@ import {
   AlertDialogTitle,
   AlertDialogDescription,
 } from '@/components/ui/alert-dialog';
-import useAlertStore from '@/store/alert';
+import useAlertStore from '@/stores/alert';
 
 export default function Alert() {
   const { message, isOpen, closeAlert } = useAlertStore();

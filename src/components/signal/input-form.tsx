@@ -1,9 +1,9 @@
 import { Send, ImageIcon, X, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatInput } from '@/components/ui/chat/chat-input';
-import { CHAT_CONSTANTS, SIGNAL_CHANNELS } from '@/pages/signal-chat/constants';
-import type { SignalChannel } from '@/pages/signal-chat/types';
-import { cn } from '@/libs/utils';
+import { CHAT_CONSTANTS, SIGNAL_CHANNELS } from '@/constants/signal';
+import type { SignalChannel } from '@/types/signal';
+import { cn } from '@/libs/auth';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';

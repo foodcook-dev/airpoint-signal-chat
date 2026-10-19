@@ -1,11 +1,11 @@
 import { useState, useRef, useCallback } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient, InfiniteData } from '@tanstack/react-query';
-import { getSignalTalksAdmin, postSignalTalk } from '@/pages/signal-chat/api';
-import useAlertStore from '@/store/alert';
-import useSignalDraftStore from '@/store/signal-draft';
-import { SelectedImage, ChatResponse, ChatMessage, SignalChannel } from '@/pages/signal-chat/types';
-import { CHAT_CONSTANTS } from '@/pages/signal-chat/constants';
-import { validateImageFile } from '@/pages/signal-chat/utils';
+import { getSignalTalksAdmin, postSignalTalk } from '@/api/signal';
+import useAlertStore from '@/stores/alert';
+import useSignalDraftStore from '@/stores/signal-draft';
+import { SelectedImage, ChatResponse, ChatMessage, SignalChannel } from '@/types/signal';
+import { CHAT_CONSTANTS } from '@/constants/signal';
+import { validateImageFile } from '@/utils';
 
 export const useSignalHandler = (channel: SignalChannel) => {
   const fileInputRef = useRef<HTMLInputElement>(null);

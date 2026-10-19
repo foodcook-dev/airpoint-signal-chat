@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
-import SignalChat from './signal-chat/templates';
-import { DEFAULT_CHANNEL, isSignalChannel } from './signal-chat/constants';
+import SignalChat from './signal-chat';
+import { DEFAULT_CHANNEL, isSignalChannel } from '@/constants/signal';
 
 // 기존 진입 경로(/, /chat)는 유료 채널로 연결. token 쿼리가 유실되지 않도록 search 유지
 function RedirectToDefaultChannel() {

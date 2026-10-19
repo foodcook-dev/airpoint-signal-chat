@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from '@/libs/utils';
+import { cn } from '@/libs/auth';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { format } from 'date-fns';
@@ -67,7 +67,8 @@ const ChatBubbleAvatar: React.FC<ChatBubbleAvatarProps> = ({ src, className }) =
 const chatBubbleMessageVariants = cva('px-5 py-3', {
   variants: {
     variant: {
-      received: 'border-border/60 bg-foreground text-contrast rounded-2xl rounded-br-md border shadow-sm',
+      received:
+        'border-border/60 bg-foreground text-contrast rounded-2xl rounded-br-md border shadow-sm',
       sent: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl rounded-br-md shadow-sm',
     },
     layout: {

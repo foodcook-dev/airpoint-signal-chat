@@ -1,7 +1,7 @@
 import { Pin } from 'lucide-react';
 import { ChatBubbleMessage } from '@/components/ui/chat/chat-bubble';
-import { ChatMessage } from '@/pages/signal-chat/types';
-import { formatSignalDate } from '@/pages/signal-chat/utils';
+import { ChatMessage } from '@/types/signal';
+import { formatSignalDate } from '@/utils';
 
 export function PollResultMessage({
   pollResult,

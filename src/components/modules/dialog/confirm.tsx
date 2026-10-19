@@ -8,7 +8,7 @@ import {
   AlertDialogTitle,
   AlertDialogDescription,
 } from '@/components/ui/alert-dialog';
-import useConfirmStore from '@/store/confirm';
+import useConfirmStore from '@/stores/confirm';
 
 export default function Confirm() {
   const { title, message, isOpen, onConfirm, onCancel, closeConfirm } = useConfirmStore();

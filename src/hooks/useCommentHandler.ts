@@ -1,14 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
-import {
-  getCommentsAdmin,
-  postDeactivateComment,
-  postCommentBanUser,
-} from '@/pages/signal-chat/api';
-import useAlertStore from '@/store/alert';
-import useConfirmStore from '@/store/confirm';
-import { validateImageFile } from '@/pages/signal-chat/utils';
-import type { ChatMessage, CommentResponse, SelectedImage } from '@/pages/signal-chat/types';
+import { getCommentsAdmin, postDeactivateComment, postCommentBanUser } from '@/api/signal';
+import useAlertStore from '@/stores/alert';
+import useConfirmStore from '@/stores/confirm';
+import { validateImageFile } from '@/utils';
+import type { ChatMessage, CommentResponse, SelectedImage } from '@/types/signal';
 import type ResponseError from '@/libs/response-error';
 
 export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage }) => {

@@ -1,5 +1,5 @@
 import API from '@/libs/client';
-import type { ChatMessage, ChatResponse, CommentResponse } from '@/pages/signal-chat/types';
+import type { ChatMessage, ChatResponse, CommentResponse } from '@/types/signal';
 
 // 시그널 톡 목록 (관리자) GET
 export async function getSignalTalksAdmin({

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { CheckCheck, MessageSquare } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { formatCommentTime } from '@/pages/signal-chat/utils';
+import { formatCommentTime } from '@/utils';
 
 interface MockNewComment {
   id: number;
@@ -24,8 +24,7 @@ const MOCK_NEW_COMMENTS: MockNewComment[] = [
     id: 2,
     nickname: '케이시',
     message: '첨부해주신 차트 보고 포지션 정리했습니다. 참고 이미지 올려드려요',
-    image:
-      'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=200&h=200&fit=crop',
+    image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=200&h=200&fit=crop',
     created_at: new Date(now - 1000 * 60 * 6).toISOString(),
   },
   {
@@ -45,8 +44,7 @@ const MOCK_NEW_COMMENTS: MockNewComment[] = [
     id: 5,
     nickname: '주식초보',
     message: '감사합니다 많이 배워갑니다',
-    image:
-      'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=200&h=200&fit=crop',
+    image: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=200&h=200&fit=crop',
     created_at: new Date(now - 1000 * 60 * 60 * 9).toISOString(),
   },
 ];
@@ -102,7 +100,7 @@ export default function NewCommentsPopover({
                       {formatCommentTime(comment.created_at)}
                     </p>
                   </div>
-                  <p className="text-contrast/80 line-clamp-2 mt-1 text-xs leading-relaxed break-words">
+                  <p className="text-contrast/80 mt-1 line-clamp-2 text-xs leading-relaxed break-words">
                     {comment.message}
                   </p>
                 </div>

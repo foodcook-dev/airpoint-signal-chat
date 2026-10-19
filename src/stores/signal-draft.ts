@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { SelectedImage, SignalChannel } from '@/pages/signal-chat/types';
+import type { SelectedImage, SignalChannel } from '@/types/signal';
 
 // 탭을 전환해도 채널별 작성 중인 내용이 섞이지 않도록 채널 단위로 보관
 export interface SignalDraft {

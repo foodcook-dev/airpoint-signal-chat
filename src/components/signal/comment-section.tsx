@@ -14,7 +14,7 @@ import {
 import { ReplyIcon } from '@/components/icons/reply-icon';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { formatSignalDate, formatCommentTime } from '@/pages/signal-chat/utils';
+import { formatSignalDate, formatCommentTime } from '@/utils';
 import likePng from '@/assets/images/signal_like.png';
 import goodPng from '@/assets/images/signal_good.png';
 import checkPng from '@/assets/images/signal_check.png';
@@ -22,8 +22,8 @@ import logoPng from '@/assets/images/app_logo.png';
 import UserBlockDialog from '@/components/modules/dialog/user-block-dialog';
 import ImagePreviewDialog from '@/components/modules/dialog/image-preview-dialog';
 import { Spinner } from '@/components/ui/spinner';
-import type { ChatMessage } from '@/pages/signal-chat/types';
-import { useCommentHandler } from '@/pages/signal-chat/hooks/useCommentHandler';
+import type { ChatMessage } from '@/types/signal';
+import { useCommentHandler } from '@/hooks/useCommentHandler';
 
 interface CommentSectionProps {
   selectedChat: ChatMessage;

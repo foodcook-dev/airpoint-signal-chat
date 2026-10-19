@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { PATH } from '@/constants/api-path';
 import ResponseError from '@/libs/response-error';
-import { getCurrentToken } from '@/libs/utils';
+import { getCurrentToken } from '@/libs/auth';
 
 const API = axios.create({
   baseURL: PATH.base,

@@ -1,4 +1,4 @@
-import type { SignalChannel } from '@/pages/signal-chat/types';
+import type { SignalChannel } from '@/types/signal';
 
 export const CHAT_CONSTANTS = {
   MAX_IMAGES: 5,

@@ -6,7 +6,7 @@ import {
   ChatBubbleAction,
   ChatBubbleActionWrapper,
 } from '@/components/ui/chat/chat-bubble';
-import { ChatMessage } from '@/pages/signal-chat/types';
+import { ChatMessage } from '@/types/signal';
 import { PollResultMessage, PollMessage } from './poll-message';
 import { DefaultMessage } from './default-message';
 

@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import logoPng from '@/assets/images/app_logo.png';
 import { useQuery } from '@tanstack/react-query';
-import { getActiveUserCount } from '@/pages/signal-chat/api';
+import { getActiveUserCount } from '@/api/signal';
 import { Crown, Info, Users, Bell } from 'lucide-react';
-import { cn } from '@/libs/utils';
+import { cn } from '@/libs/auth';
 import { Button } from '@/components/ui/button';
 import NewCommentsPopover from '@/components/modules/new-comments-popover';
-import { SIGNAL_CHANNELS } from '@/pages/signal-chat/constants';
-import type { SignalChannel } from '@/pages/signal-chat/types';
+import { SIGNAL_CHANNELS } from '@/constants/signal';
+import type { SignalChannel } from '@/types/signal';
 
 // TODO: API 연동 전 시안 — 실제로는 서버에서 마지막 확인 시점 이후 신규 댓글 수를 내려줘야 함
 const MOCK_NEW_COMMENT_COUNT = 5;

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import likePng from '@/assets/images/signal_like.png';
 import goodPng from '@/assets/images/signal_good.png';
 import checkPng from '@/assets/images/signal_check.png';
-import { ChatMessage } from '@/pages/signal-chat/types';
+import { ChatMessage } from '@/types/signal';
 import ImagePreviewDialog from '@/components/modules/dialog/image-preview-dialog';
 
 interface OGTag {

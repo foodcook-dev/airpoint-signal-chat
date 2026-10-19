@@ -2,7 +2,7 @@ import { HashRouter } from 'react-router-dom';
 import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import ResponseError from '@/libs/response-error';
-import { getTokenFromUrl, setTokenToStorage } from '@/libs/utils';
+import { getTokenFromUrl, setTokenToStorage } from '@/libs/auth';
 import Pages from '@/pages/Root';
 import { ThemeProvider, useTheme } from '@/components/modules/theme-provider';
 import { Dialog } from '@/components/ui/dialog';
