@@ -1,8 +1,94 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query';
 import { PATH } from '@/constants/api-path';
 import { ADMIN_DEBUG_TOKEN } from '@/libs/client';
+import type {
+  ChatResponse,
+  SignalReactionUpdateEvent,
+  SignalCommentCountUpdateEvent,
+  SignalCommentEvent,
+  Comment,
+  Reply,
+  CommentResponse,
+} from '@/types/signal';
+
+// 별도 핸들러가 캐시를 직접 patch하는 이벤트 — onAny의 전체 무효화에서 제외한다
+const SPECIFICALLY_HANDLED_EVENTS = new Set([
+  'signal_reaction_update',
+  'update_comment_count',
+  'create_signal_talk_comment',
+  'update_signal_talk_comment',
+  'delete_signal_talk_comment',
+]);
+
+// 소켓이 같은 이벤트를 배열로 묶어 보내는 경우가 있어 항상 단일 객체로 정규화한다
+function firstOf<T>(payload: T | T[]): T | undefined {
+  return Array.isArray(payload) ? payload[0] : payload;
+}
+
+function toComment(event: SignalCommentEvent): Comment {
+  return {
+    id: event.id,
+    signal_talk_id: event.signal_talk_id,
+    user_id: event.user_id,
+    username: event.username,
+    nickname: event.nickname,
+    message: event.message,
+    images: event.images,
+    replies: [],
+    reply_to_id: event.reply_to_id,
+    reported_count: 0,
+    is_edited: event.is_edited ?? false,
+    deleted_at: false,
+    created_at: event.created_at,
+  };
+}
+
+function toReply(event: SignalCommentEvent): Reply {
+  const mainCommentId = event.main_comment_id as number;
+  return {
+    created_at: event.created_at,
+    deleted_at: false,
+    id: event.id,
+    images: event.images,
+    is_edited: event.is_edited ?? false,
+    main_comment_id: mainCommentId,
+    message: event.message,
+    nickname: event.nickname,
+    reply_to_id: event.reply_to_id ?? mainCommentId,
+    reported_count: 0,
+    signal_talk_id: event.signal_talk_id,
+    tag_nickname: event.tag_nickname ?? '',
+    user_id: String(event.user_id),
+    username: event.username,
+  };
+}
+
+// 중복 댓글 관리
+function hasComment(data: InfiniteData<CommentResponse>, id: number): boolean {
+  return data.pages.some((page) => page.results.some((c) => String(c.id) === String(id)));
+}
+
+function hasReply(data: InfiniteData<CommentResponse>, id: number): boolean {
+  return data.pages.some((page) =>
+    page.results.some((c) => c.replies.some((r) => String(r.id) === String(id))),
+  );
+}
+
+function patchCommentThread(
+  queryClient: QueryClient,
+  signalTalkId: number,
+  updater: (old: InfiniteData<CommentResponse>) => InfiniteData<CommentResponse>,
+) {
+  queryClient.setQueriesData<InfiniteData<CommentResponse>>(
+    {
+      predicate: (query) =>
+        query.queryKey[0] === 'comment' && String(query.queryKey[1]) === String(signalTalkId),
+    },
+    (old) => (old ? updater(old) : old),
+  );
+}
 
 type Audience = 'paid' | 'free';
 
@@ -79,9 +165,165 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       console.error('❌ Socket IO 에러:', error);
     });
 
+    // reactions만 바로 덮어써서 전체 리페치 없이 즉시 반영한다
+    socket.on('signal_reaction_update', (payload: SignalReactionUpdateEvent) => {
+      const { signal_talk_id, reactions } = payload;
+
+      queryClient.setQueriesData<InfiniteData<ChatResponse>>({ queryKey: ['signal'] }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            results: page.results.map((msg) =>
+              String(msg.id) === String(signal_talk_id) ? { ...msg, reactions } : msg,
+            ),
+          })),
+        };
+      });
+    });
+
+    // 시그널 댓글 수 변경 — 목록(메시지 버블)의 comment_count만 patch한다. 상세 댓글 패널의
+    // 실제 내용은 create/update/delete 이벤트가 각각 직접 patch하므로 여기서는 손대지 않는다
+    socket.on('update_comment_count', (payload: SignalCommentCountUpdateEvent) => {
+      const { signal_talk_id, comment_count } = payload;
+
+      queryClient.setQueriesData<InfiniteData<ChatResponse>>({ queryKey: ['signal'] }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            results: page.results.map((msg) =>
+              String(msg.id) === String(signal_talk_id) ? { ...msg, comment_count } : msg,
+            ),
+          })),
+        };
+      });
+    });
+
+    // 댓글 생성 — main_comment_id가 있으면 대댓글(원댓글의 replies에 추가), 없으면 최상위
+    // 댓글(마지막으로 불러온 페이지 끝에 추가 + count 증가)로 캐시를 직접 patch한다.
+    // 관리자 차단 여부와 무관하게 전부 노출한다 — 관리자는 숨기지 말고 봐야 모더레이션이 가능하다.
+    socket.on(
+      'create_signal_talk_comment',
+      (payload: SignalCommentEvent | SignalCommentEvent[]) => {
+        const comment = firstOf(payload);
+        if (!comment) return;
+
+        patchCommentThread(queryClient, comment.signal_talk_id, (old) => {
+          if (comment.main_comment_id != null) {
+            if (hasReply(old, comment.id)) return old;
+
+            let inserted = false;
+            return {
+              ...old,
+              pages: old.pages.map((page) => ({
+                ...page,
+                results: page.results.map((c) => {
+                  if (!inserted && c.id === comment.main_comment_id) {
+                    inserted = true;
+                    return { ...c, replies: [...c.replies, toReply(comment)] };
+                  }
+                  return c;
+                }),
+              })),
+            };
+          }
+
+          if (hasComment(old, comment.id)) return old;
+
+          const pages = old.pages;
+          return {
+            ...old,
+            pages: pages.map((page, i) => ({
+              ...page,
+              count: page.count + 1,
+              results:
+                i === pages.length - 1 ? [...page.results, toComment(comment)] : page.results,
+            })),
+          };
+        });
+      },
+    );
+
+    // 댓글/대댓글 수정 — id로 찾아 message/images/is_edited만 덮어쓴다 (정렬 위치는 그대로)
+    socket.on(
+      'update_signal_talk_comment',
+      (payload: SignalCommentEvent | SignalCommentEvent[]) => {
+        const comment = firstOf(payload);
+        if (!comment) return;
+
+        patchCommentThread(queryClient, comment.signal_talk_id, (old) => ({
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            results: page.results.map((c) => {
+              if (comment.main_comment_id == null) {
+                return c.id === comment.id
+                  ? {
+                      ...c,
+                      message: comment.message,
+                      images: comment.images,
+                      is_edited: comment.is_edited ?? c.is_edited,
+                    }
+                  : c;
+              }
+              if (c.id !== comment.main_comment_id) return c;
+              return {
+                ...c,
+                replies: c.replies.map((r) =>
+                  r.id === comment.id
+                    ? {
+                        ...r,
+                        message: comment.message,
+                        images: comment.images,
+                        is_edited: comment.is_edited ?? r.is_edited,
+                      }
+                    : r,
+                ),
+              };
+            }),
+          })),
+        }));
+      },
+    );
+
+    // 댓글/대댓글 삭제 — 목록에서 지우지 않고 deleted_at만 세운다. 관리자 화면은 삭제된 댓글도
+    // "삭제됨" 표시로 계속 보여주는 모더레이션 UI라서, 실제로 지워버리는 대신 상태만 바꾼다.
+    socket.on(
+      'delete_signal_talk_comment',
+      (payload: SignalCommentEvent | SignalCommentEvent[]) => {
+        const comment = firstOf(payload);
+        if (!comment) return;
+
+        patchCommentThread(queryClient, comment.signal_talk_id, (old) => ({
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            results: page.results.map((c) => {
+              if (comment.main_comment_id == null) {
+                return c.id === comment.id
+                  ? { ...c, deleted_at: true, message: comment.message }
+                  : c;
+              }
+              if (c.id !== comment.main_comment_id) return c;
+              return {
+                ...c,
+                replies: c.replies.map((r) =>
+                  r.id === comment.id ? { ...r, deleted_at: true, message: comment.message } : r,
+                ),
+              };
+            }),
+          })),
+        }));
+      },
+    );
+
     // TODO: 실제 이벤트명이 정해지면 이벤트별로 분기해서 필요한 쿼리만 무효화하도록 변경
     socket.onAny((eventName, ...args) => {
       console.log('📨 Socket 이벤트 수신:', { eventName, data: args });
+      if (SPECIFICALLY_HANDLED_EVENTS.has(eventName)) return;
       queryClient.invalidateQueries({ queryKey: ['signal'] });
       queryClient.invalidateQueries({ queryKey: ['comment'] });
     });

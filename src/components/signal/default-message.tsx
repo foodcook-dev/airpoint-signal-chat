@@ -34,7 +34,7 @@ function OGTag({ ogTags }: OGTagProps) {
           <div className="p-3">
             <h3 className="mb-1 line-clamp-2 text-sm font-medium">{og.og_title}</h3>
             <p className="mb-1 line-clamp-3 text-xs">{og.og_description}</p>
-            <a href={og.og_tag_link} target="_blank" className="text-xs">
+            <a href={og.og_tag_link} target="_blank" className="block text-xs break-all">
               {og.og_tag_link}
             </a>
           </div>

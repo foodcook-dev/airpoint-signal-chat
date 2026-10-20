@@ -4,7 +4,6 @@ import {
   MessageSquareOff,
   UserX,
   Trash2,
-  RefreshCw,
   Send,
   MessageSquare,
   CornerDownRight,
@@ -57,7 +56,6 @@ export default function CommentSection({
     commentObserverRef,
     scrollContainerRef,
     blockDialogOpen,
-    commentRefetch,
     setBlockDialogOpen,
     handleDisableComment,
     handleBlockUser,
@@ -187,17 +185,8 @@ export default function CommentSection({
       </div>
 
       {/* 댓글 리스트 헤더 */}
-      <div className="bg-foreground flex items-center justify-between px-4 py-2.5">
+      <div className="bg-foreground flex items-center px-4 py-2.5">
         <p className="text-contrast/80 text-xs font-medium">댓글 {commentCount}개</p>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-contrast/60 hover:bg-foreground/60 hover:text-contrast h-6 w-6"
-          onClick={() => commentRefetch()}
-          title="새로고침"
-        >
-          <RefreshCw className="size-3.5" />
-        </Button>
       </div>
 
       {/* 댓글 리스트 */}

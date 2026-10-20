@@ -41,7 +41,45 @@ export interface ChatMessage {
     like: number;
     good: number;
     check: number;
+    is_liked?: boolean;
+    is_good?: boolean;
+    is_checked?: boolean;
   };
+}
+
+// 소켓 'signal_reaction_update' 이벤트 페이로드 — 리액션이 추가/삭제될 때마다 하나씩 온다
+export interface SignalReactionUpdateEvent {
+  signal_talk_id: number;
+  user_id: number;
+  username: string;
+  type: 'like' | 'good' | 'check';
+  action: 'added' | 'removed';
+  reactions: ChatMessage['reactions'];
+}
+
+// 소켓 'update_comment_count' 이벤트 페이로드 — 해당 시그널의 댓글이 생성/삭제될 때마다 하나씩 온다
+export interface SignalCommentCountUpdateEvent {
+  signal_talk_id: number;
+  comment_count: number;
+}
+
+// 소켓 'create_signal_talk_comment' / 'update_signal_talk_comment' / 'delete_signal_talk_comment'
+// 페이로드 — 생성/수정/삭제된 댓글(또는 대댓글, main_comment_id가 있으면 대댓글) 하나를 그대로 내려준다.
+// 새로 불러오지 않고 이 페이로드만으로 ['comment', signal_talk_id] 캐시를 직접 patch한다.
+export interface SignalCommentEvent {
+  id: number;
+  signal_talk_id: number;
+  user_id: number;
+  username: string;
+  nickname: string;
+  message: string;
+  images: string[];
+  created_at: string;
+  main_comment_id: number | null;
+  reply_to_id: number | null;
+  tag_nickname: string | null;
+  is_edited?: boolean;
+  admin_blocked?: boolean;
 }
 
 export interface Comment {

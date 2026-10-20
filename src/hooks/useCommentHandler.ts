@@ -87,11 +87,22 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
     enabled: !!selectedChat?.id,
   });
 
+  // 명시적으로 새로고침 버튼을 눌렀을 때만 로딩 상태로 취급한다.
+  const [isManualRefetching, setIsManualRefetching] = useState(false);
+  const handleRefetchComments = async () => {
+    setIsManualRefetching(true);
+    try {
+      await commentResponse.refetch();
+    } finally {
+      setIsManualRefetching(false);
+    }
+  };
+
   const { mutateAsync: disableCommentRequest } = useMutation({
     mutationFn: (commentId: number) => postDeactivateComment(commentId),
     onSuccess: () => {
       showAlert('댓글이 비활성화되었습니다.');
-      commentResponse.refetch();
+      handleRefetchComments();
     },
     onError: handleMutationError,
   });
@@ -199,20 +210,19 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
   }, [commentResponse.hasNextPage, commentResponse.isFetchingNextPage, commentResponse]);
 
   useEffect(() => {
-    if ((commentResponse.isLoading || commentResponse.isRefetching) && scrollContainerRef.current) {
+    if ((commentResponse.isLoading || isManualRefetching) && scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0;
     }
-  }, [commentResponse.isLoading || commentResponse.isRefetching]);
+  }, [commentResponse.isLoading, isManualRefetching]);
 
   return {
-    isFetching: commentResponse.isLoading || commentResponse.isRefetching,
+    isFetching: commentResponse.isLoading || isManualRefetching,
     selectedUser,
     commentList: commentResponse.data?.pages.flatMap((page) => page.results) || [],
     commentCount: commentResponse.data?.pages?.[0]?.count || 0,
     commentObserverRef,
     scrollContainerRef,
     blockDialogOpen,
-    commentRefetch: commentResponse.refetch,
     setBlockDialogOpen,
     handleDisableComment,
     handleBlockUser,

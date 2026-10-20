@@ -72,7 +72,7 @@ export default function SignalMessage({
   return (
     <ChatBubble key={id} variant="sent">
       <ChatBubbleAvatar />
-      <div className="relative flex flex-col gap-2">
+      <div className="relative flex min-w-0 flex-col gap-2">
         {canPickInvestmentNote && is_investment_note && (
           <div className="absolute -top-2 -right-2 z-10 flex items-center gap-1 rounded-full bg-amber-500 px-2 py-1 text-[11px] font-semibold whitespace-nowrap text-white shadow-sm">
             <Star className="size-3 fill-white" />
