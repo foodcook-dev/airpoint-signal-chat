@@ -33,11 +33,20 @@ export const useSignalHandler = (channel: SignalChannel) => {
   // 유료 채널은 audience=paid, 무료 채널은 audience=free로 조회
   const audience = channel === 'premium' ? 'paid' : 'free';
 
-  // 탭(채널) 전환 시 소켓은 그대로 두고 구독 대상 audience만 전환
-  const { joinAudience } = useSocket();
+  const { joinAudience, joinRoom, leaveRoom } = useSocket();
+
+  // 탭(채널) 전환
   useEffect(() => {
     joinAudience(audience);
   }, [audience]);
+
+  // 댓글 상세방(우측 패널) 입장/퇴장
+  useEffect(() => {
+    if (!selectedChatId) return;
+    const signalTalkId = Number(selectedChatId);
+    joinRoom(signalTalkId);
+    return () => leaveRoom(signalTalkId);
+  }, [selectedChatId]);
 
   const queryClient = useQueryClient();
   const signalQueryKey = ['signal', channel];

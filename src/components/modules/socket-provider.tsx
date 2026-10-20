@@ -8,8 +8,9 @@ type Audience = 'paid' | 'free';
 
 interface SocketContextType {
   isConnected: boolean;
-  // 관리자가 보고 있는 탭(프리미엄/무료)이 바뀔 때 호출 — 연결은 유지한 채 구독 대상만 전환한다
   joinAudience: (audience: Audience) => void;
+  joinRoom: (signalTalkId: number) => void;
+  leaveRoom: (signalTalkId: number) => void;
   sendMessage: (eventName: string, data: unknown, callback?: (response: unknown) => void) => void;
 }
 
@@ -27,6 +28,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const socketRef = useRef<Socket | null>(null);
 
   const audienceRef = useRef<Audience | null>(null);
+  // 재연결됐을 때 열려 있던 상세방을 다시 들어가기 위해 보관
+  const roomIdRef = useRef<number | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const queryClient = useQueryClient();
 
@@ -56,6 +59,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           token: ADMIN_DEBUG_TOKEN,
           audience: audienceRef.current,
         });
+      }
+      if (roomIdRef.current != null) {
+        socket.emit('join_room', { token: ADMIN_DEBUG_TOKEN, signal_talk_id: roomIdRef.current });
       }
     });
 
@@ -104,6 +110,28 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     socket.emit('join_v2_signal_talk_list', { token: ADMIN_DEBUG_TOKEN, audience });
   };
 
+  // 댓글 상세방 입장 — 목록방은 건드리지 않는다
+  const joinRoom = (signalTalkId: number) => {
+    roomIdRef.current = signalTalkId;
+    if (socketRef.current?.connected) {
+      socketRef.current.emit('join_room', {
+        token: ADMIN_DEBUG_TOKEN,
+        signal_talk_id: signalTalkId,
+      });
+    }
+  };
+
+  // 댓글 상세방 퇴장 — 목록방은 건드리지 않는다
+  const leaveRoom = (signalTalkId: number) => {
+    if (roomIdRef.current === signalTalkId) roomIdRef.current = null;
+    if (socketRef.current?.connected) {
+      socketRef.current.emit('leave_room', {
+        token: ADMIN_DEBUG_TOKEN,
+        signal_talk_id: signalTalkId,
+      });
+    }
+  };
+
   const sendMessage = (
     eventName: string,
     data: unknown,
@@ -119,7 +147,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <SocketContext.Provider value={{ isConnected, joinAudience, sendMessage }}>
+    <SocketContext.Provider value={{ isConnected, joinAudience, joinRoom, leaveRoom, sendMessage }}>
       {children}
     </SocketContext.Provider>
   );
