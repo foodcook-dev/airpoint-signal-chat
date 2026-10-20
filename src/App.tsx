@@ -5,6 +5,7 @@ import ResponseError from '@/libs/response-error';
 import { getTokenFromUrl, setTokenToStorage } from '@/libs/auth';
 import Pages from '@/pages/Root';
 import { ThemeProvider, useTheme } from '@/components/modules/theme-provider';
+import { SocketProvider } from '@/components/modules/socket-provider';
 import { Dialog } from '@/components/ui/dialog';
 import Alert from '@/components/modules/dialog/alert';
 import Confirm from '@/components/modules/dialog/confirm';
@@ -55,13 +56,15 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-        <Dialog>
-          <Alert />
-          <Confirm />
-          <AppContent />
-        </Dialog>
-      </ThemeProvider>
+      <SocketProvider>
+        <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+          <Dialog>
+            <Alert />
+            <Confirm />
+            <AppContent />
+          </Dialog>
+        </ThemeProvider>
+      </SocketProvider>
     </QueryClientProvider>
   );
 }

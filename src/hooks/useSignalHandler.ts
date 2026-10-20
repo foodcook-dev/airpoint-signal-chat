@@ -1,6 +1,7 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient, InfiniteData } from '@tanstack/react-query';
 import { getSignalTalksAdmin, postSignalTalk } from '@/api/signal';
+import { useSocket } from '@/components/modules/socket-provider';
 import useAlertStore from '@/stores/alert';
 import useSignalDraftStore from '@/stores/signal-draft';
 import { SelectedImage, ChatResponse, ChatMessage, SignalChannel } from '@/types/signal';
@@ -31,6 +32,12 @@ export const useSignalHandler = (channel: SignalChannel) => {
 
   // 유료 채널은 audience=paid, 무료 채널은 audience=free로 조회
   const audience = channel === 'premium' ? 'paid' : 'free';
+
+  // 탭(채널) 전환 시 소켓은 그대로 두고 구독 대상 audience만 전환
+  const { joinAudience } = useSocket();
+  useEffect(() => {
+    joinAudience(audience);
+  }, [audience]);
 
   const queryClient = useQueryClient();
   const signalQueryKey = ['signal', channel];

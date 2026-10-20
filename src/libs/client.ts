@@ -7,6 +7,11 @@ const API = axios.create({
   baseURL: PATH.base,
 });
 
+// TODO: 로그인 연동 전까지 임시로 고정된 관리자 토큰을 사용 — 소켓 연결(socket-provider.tsx)도
+// 같은 백엔드를 쓰므로 반드시 이 토큰을 그대로 가져다 써야 핸드셰이크가 거부되지 않는다.
+export const ADMIN_DEBUG_TOKEN =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkyNTAwNzQ0LCJpYXQiOjE3OTI0NjQ3NDQsImp0aSI6ImEyZGMzNzI0ODkwMzQ4MTk4OWFlMGI2MjlhYzE1NDJkIiwidXNlcm5hbWUiOjF9.tzSV4LarNYu961aquVRuSZnEaYuPkMHkeh6LYQyHN7k';
+
 API.interceptors.request.use(
   (config) => {
     const newConfig = { ...config };
@@ -17,8 +22,7 @@ API.interceptors.request.use(
     //   newConfig.headers.Authorization = `Bearer ${token}`;
     // }
 
-    newConfig.headers.Authorization =
-      'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkyNDA1NTgxLCJpYXQiOjE3OTIzNjk1ODEsImp0aSI6ImJhZDEzNjM5ZWQ0MTRjMmJhNTNjY2JhOTRkODgxNTRjIiwidXNlcm5hbWUiOjF9.rlU3lDhsBZMNQycnOIT-05QX3sIUFxstTpdk7fZJfrM';
+    newConfig.headers.Authorization = `Bearer ${ADMIN_DEBUG_TOKEN}`;
 
     return newConfig;
   },
