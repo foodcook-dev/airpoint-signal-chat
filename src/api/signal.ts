@@ -1,5 +1,5 @@
 import API from '@/libs/client';
-import type { ChatMessage, ChatResponse, CommentResponse } from '@/types/signal';
+import type { ActiveUserCount, ChatMessage, ChatResponse, CommentResponse } from '@/types/signal';
 
 // 시그널 톡 목록 (관리자) GET
 export async function getSignalTalksAdmin({
@@ -24,10 +24,9 @@ export async function postSignalTalk(formData: FormData): Promise<ChatMessage> {
 }
 
 // 채널별 현재 접속자 수
-export async function getActiveUserCount(): Promise<{ connected_count: number }> {
-  const { data } = await API.get<{ connected_count: number }>(
-    '/talk/signal_talks/active_user_count/',
-  );
+export async function getActiveUserCount(): Promise<ActiveUserCount> {
+  const { data } = await API.get('/talk/signal_talks/active_user_count/');
+
   return data;
 }
 

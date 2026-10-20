@@ -60,7 +60,9 @@ function ChannelTab({ channel, isActive }: { channel: SignalChannel; isActive: b
         )}
       >
         <Users className="size-3" />
-        {activeUserCount?.connected_count || 0}
+        {channel === 'premium'
+          ? activeUserCount?.paid_connected_count || 0
+          : activeUserCount?.free_connected_count || 0}
       </span>
     </NavLink>
   );

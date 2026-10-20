@@ -1,3 +1,9 @@
+export interface ActiveUserCount {
+  connected_count: number;
+  free_connected_count: number;
+  paid_connected_count: number;
+}
+
 export interface ChatMessage {
   id: string;
   comment_count: number;
