@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
-import { getCommentsAdmin, postDeactivateComment, postCommentBanUser } from '@/api/signal';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  getCommentsAdmin,
+  postComment,
+  postDeactivateComment,
+  postCommentBanUser,
+} from '@/api/signal';
 import useAlertStore from '@/stores/alert';
 import useConfirmStore from '@/stores/confirm';
 import { validateImageFile } from '@/utils';
@@ -10,6 +15,7 @@ import type ResponseError from '@/libs/response-error';
 export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage }) => {
   const { showAlert } = useAlertStore();
   const { showConfirm } = useConfirmStore();
+  const queryClient = useQueryClient();
 
   const commentObserverRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -24,9 +30,11 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
   const commentFileInputRef = useRef<HTMLInputElement>(null);
 
   // 대댓글 입력 (한 번에 하나의 댓글에만 대댓글을 달 수 있도록 단일 상태로 관리)
-  const [replyTarget, setReplyTarget] = useState<{ commentId: number; nickname: string } | null>(
-    null,
-  );
+  const [replyTarget, setReplyTarget] = useState<{
+    commentId: number;
+    userId: number;
+    nickname: string;
+  } | null>(null);
   const [replyValue, setReplyValue] = useState('');
   const [replyImage, setReplyImage] = useState<SelectedImage | null>(null);
   const replyFileInputRef = useRef<HTMLInputElement>(null);
@@ -146,9 +154,11 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
 
   // 대댓글 달기 버튼 클릭 — 같은 대상(댓글 또는 그 안의 특정 대댓글)을 다시 누르면 입력창을 닫고,
   // 같은 스레드 안의 다른 대댓글을 누르면 태그만 바꿔서 입력창을 유지한다.
-  const handleOpenReply = (commentId: number, nickname: string) => {
+  const handleOpenReply = (commentId: number, userId: number, nickname: string) => {
     setReplyTarget((prev) =>
-      prev?.commentId === commentId && prev?.nickname === nickname ? null : { commentId, nickname },
+      prev?.commentId === commentId && prev?.nickname === nickname
+        ? null
+        : { commentId, userId, nickname },
     );
     setReplyValue('');
     setReplyImage(null);
@@ -160,21 +170,57 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
     setReplyImage(null);
   };
 
-  // TODO: 대댓글 작성 API 연동 — 현재는 UI/UX만 구현
-  const handleSubmitReply = () => {
-    if (!replyValue.trim() && !replyImage) return;
-    showAlert('대댓글 작성 기능은 준비 중입니다.');
-    setReplyValue('');
-    setReplyImage(null);
-    setReplyTarget(null);
+  const { mutateAsync: createCommentRequest, isPending: isSubmittingComment } = useMutation({
+    mutationFn: (params: { content: string; image: SelectedImage | null }) =>
+      postComment({
+        signalTalkId: selectedChat.id,
+        content: params.content,
+        image: params.image ?? undefined,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['comment', selectedChat.id] });
+      setNewComment('');
+      setCommentImage(null);
+    },
+    onError: handleMutationError,
+  });
+
+  const handleSubmitComment = async () => {
+    if (!newComment.trim() && !commentImage) return;
+    await createCommentRequest({ content: newComment.trim(), image: commentImage });
   };
 
-  // TODO: 댓글 작성 API 연동 — 현재는 UI/UX만 구현
-  const handleSubmitComment = () => {
-    if (!newComment.trim() && !commentImage) return;
-    showAlert('댓글 작성 기능은 준비 중입니다.');
-    setNewComment('');
-    setCommentImage(null);
+  const { mutateAsync: createReplyRequest, isPending: isSubmittingReply } = useMutation({
+    mutationFn: (params: {
+      content: string;
+      image: SelectedImage | null;
+      mainCommentId: number;
+      replyToUserId: number;
+    }) =>
+      postComment({
+        signalTalkId: selectedChat.id,
+        content: params.content,
+        image: params.image ?? undefined,
+        mainCommentId: params.mainCommentId,
+        replyToId: params.replyToUserId,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['comment', selectedChat.id] });
+      setReplyValue('');
+      setReplyImage(null);
+      setReplyTarget(null);
+    },
+    onError: handleMutationError,
+  });
+
+  const handleSubmitReply = async () => {
+    if ((!replyValue.trim() && !replyImage) || !replyTarget) return;
+    await createReplyRequest({
+      content: replyValue.trim(),
+      image: replyImage,
+      mainCommentId: replyTarget.commentId,
+      replyToUserId: replyTarget.userId,
+    });
   };
 
   // Intersection Observer를 사용한 무한 스크롤
@@ -232,6 +278,7 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
     newComment,
     setNewComment,
     handleSubmitComment,
+    isSubmittingComment,
     commentImage,
     commentFileInputRef,
     handleCommentImageSelect,
@@ -245,6 +292,7 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
     handleOpenReply,
     handleCancelReply,
     handleSubmitReply,
+    isSubmittingReply,
     replyImage,
     replyFileInputRef,
     handleReplyImageSelect,

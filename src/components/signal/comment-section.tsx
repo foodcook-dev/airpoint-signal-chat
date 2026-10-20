@@ -63,6 +63,7 @@ export default function CommentSection({
     newComment,
     setNewComment,
     handleSubmitComment,
+    isSubmittingComment,
     commentImage,
     commentFileInputRef,
     handleCommentImageSelect,
@@ -74,6 +75,7 @@ export default function CommentSection({
     handleOpenReply,
     handleCancelReply,
     handleSubmitReply,
+    isSubmittingReply,
     replyImage,
     replyFileInputRef,
     handleReplyImageSelect,
@@ -394,7 +396,9 @@ export default function CommentSection({
                               {!reply.deleted_at && replyTarget?.commentId !== id && (
                                 <button
                                   type="button"
-                                  onClick={() => handleOpenReply(id, reply.nickname)}
+                                  onClick={() =>
+                                    handleOpenReply(id, Number(reply.user_id), reply.nickname)
+                                  }
                                   className="text-contrast/45 hover:text-primary mt-0.5 flex w-fit items-center gap-1 text-[10px] font-medium transition-colors"
                                 >
                                   <ReplyIcon className="size-3.5" />
@@ -411,7 +415,7 @@ export default function CommentSection({
                     {!deleted_at && replyTarget?.commentId !== id && (
                       <button
                         type="button"
-                        onClick={() => handleOpenReply(id, nickname)}
+                        onClick={() => handleOpenReply(id, user_id, nickname)}
                         className="text-contrast/50 hover:text-primary mt-3 flex items-center gap-1 text-[11px] font-medium transition-colors"
                       >
                         <ReplyIcon className="size-4" />
@@ -492,7 +496,7 @@ export default function CommentSection({
                               <Button
                                 size="sm"
                                 className="h-7 gap-1 px-2.5 text-[11px]"
-                                disabled={!replyValue.trim() && !replyImage}
+                                disabled={(!replyValue.trim() && !replyImage) || isSubmittingReply}
                                 onClick={handleSubmitReply}
                               >
                                 <Send className="size-3" />
@@ -569,7 +573,7 @@ export default function CommentSection({
             <Button
               size="icon"
               className="h-8 w-8 flex-shrink-0 rounded-lg"
-              disabled={!newComment.trim() && !commentImage}
+              disabled={(!newComment.trim() && !commentImage) || isSubmittingComment}
               onClick={handleSubmitComment}
               title="댓글 등록"
             >
