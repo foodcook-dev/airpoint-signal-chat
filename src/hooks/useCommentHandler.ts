@@ -86,7 +86,7 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
   const commentResponse = useInfiniteQuery<CommentResponse>({
     queryKey: ['comment', selectedChat?.id],
     queryFn: ({ pageParam = 1 }) =>
-      getCommentsAdmin({ signalTalkId: selectedChat?.id, page: pageParam as number, pageSize: 10 }),
+      getCommentsAdmin({ signalTalkId: selectedChat?.id, page: pageParam as number }),
     getNextPageParam: (lastPage, pages) => {
       if (lastPage.next) return pages.length + 1;
       return undefined;
@@ -170,6 +170,27 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
     setReplyImage(null);
   };
 
+  const scrollToLatestComment = async () => {
+    const waitForRender = () => new Promise((resolve) => setTimeout(resolve, 50));
+    const scrollToBottom = () => {
+      const el = scrollContainerRef.current;
+      if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+    };
+
+    const refreshed = await commentResponse.refetch();
+    await waitForRender();
+    let hasMore = !!refreshed.data?.pages.at(-1)?.next;
+    scrollToBottom();
+
+    while (hasMore) {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const result = await commentResponse.fetchNextPage();
+      await waitForRender();
+      hasMore = !!result.hasNextPage;
+      scrollToBottom();
+    }
+  };
+
   const { mutateAsync: createCommentRequest, isPending: isSubmittingComment } = useMutation({
     mutationFn: (params: { content: string; image: SelectedImage | null }) =>
       postComment({
@@ -178,9 +199,9 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
         image: params.image ?? undefined,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['comment', selectedChat.id] });
       setNewComment('');
       setCommentImage(null);
+      scrollToLatestComment();
     },
     onError: handleMutationError,
   });

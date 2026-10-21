@@ -40,7 +40,7 @@ export async function getActiveUserCount(): Promise<ActiveUserCount> {
 export async function getCommentsAdmin({
   signalTalkId,
   page,
-  pageSize = 10,
+  pageSize = 30,
 }: {
   signalTalkId: string | number | undefined;
   page: number;
@@ -48,7 +48,7 @@ export async function getCommentsAdmin({
 }): Promise<CommentResponse> {
   const { data } = await API.get<CommentResponse>(
     `/talk/signal_talks/${signalTalkId}/comments/admin/`,
-    { params: { page, page_size: pageSize } },
+    { params: { page, page_size: pageSize, sort: 'asc' } },
   );
   return data;
 }
