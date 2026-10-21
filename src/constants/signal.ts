@@ -15,6 +15,8 @@ export const SIGNAL_CHANNELS: Record<
     shortLabel: string;
     description: string;
     tabActiveClass: string;
+    tabTextClass: string;
+    tabUnderlineClass: string;
     badgeClass: string;
     inputRingClass: string;
     sendButtonClass: string;
@@ -25,6 +27,8 @@ export const SIGNAL_CHANNELS: Record<
     shortLabel: '프리미엄',
     description: '프리미엄 구독자에게만 전달되는 채널입니다.',
     tabActiveClass: 'border-[#FF7700] bg-[#FF7700]/8 text-[#B35400]!',
+    tabTextClass: 'text-[#FF7700]',
+    tabUnderlineClass: 'bg-[#FF7700]',
     badgeClass: 'bg-[#FF7700] text-white',
     inputRingClass: 'border-[#FF7700] focus-within:ring-[#FF7700]',
     sendButtonClass: 'bg-[#FF7700] hover:bg-[#E66A00]',
@@ -34,6 +38,8 @@ export const SIGNAL_CHANNELS: Record<
     shortLabel: '무료',
     description: '무료 회원 전용 채널입니다.',
     tabActiveClass: 'border-[#0077FF] bg-[#0077FF]/8 text-[#0053B2]!',
+    tabTextClass: 'text-[#0077FF]',
+    tabUnderlineClass: 'bg-[#0077FF]',
     badgeClass: 'bg-[#0077FF] text-white',
     inputRingClass: 'border-[#0077FF] focus-within:ring-[#0077FF]',
     sendButtonClass: 'bg-[#0077FF] hover:bg-[#0062D6]',

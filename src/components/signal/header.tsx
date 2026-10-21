@@ -1,35 +1,18 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import logoPng from '@/assets/images/app_logo.png';
 import { useQuery } from '@tanstack/react-query';
 import { getActiveUserCount } from '@/api/signal';
-import { Crown, Info, Users, Bell } from 'lucide-react';
+import { Crown, Users, Bell } from 'lucide-react';
 import { cn } from '@/libs/auth';
 import { Button } from '@/components/ui/button';
 import NewCommentsPopover from '@/components/modules/new-comments-popover';
+// import { ThemeToggle } from '@/components/modules/theme-toggle';
 import { SIGNAL_CHANNELS } from '@/constants/signal';
 import type { SignalChannel } from '@/types/signal';
 
 // TODO: API 연동 전 시안 — 실제로는 서버에서 마지막 확인 시점 이후 신규 댓글 수를 내려줘야 함
 const MOCK_NEW_COMMENT_COUNT = 5;
-
-function Tooltip({ children, text }: { children: React.ReactNode; text: string }) {
-  const [show, setShow] = useState(false);
-  return (
-    <span
-      className="relative flex items-center"
-      onMouseEnter={() => setShow(true)}
-      onMouseLeave={() => setShow(false)}
-    >
-      {children}
-      {show && (
-        <span className="absolute top-full right-0 z-10 mt-1 w-max rounded bg-black px-2 py-1 text-xs text-white shadow">
-          {text}
-        </span>
-      )}
-    </span>
-  );
-}
 
 function ChannelTab({ channel, isActive }: { channel: SignalChannel; isActive: boolean }) {
   const config = SIGNAL_CHANNELS[channel];
@@ -45,10 +28,8 @@ function ChannelTab({ channel, isActive }: { channel: SignalChannel; isActive: b
     <NavLink
       to={`/chat/${channel}`}
       className={cn(
-        'flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-all duration-150',
-        isActive
-          ? config.tabActiveClass
-          : 'text-contrast/65! hover:bg-foreground hover:text-contrast! border-transparent',
+        'relative flex h-full items-center gap-2 px-2 text-sm font-semibold transition-colors',
+        isActive ? config.tabTextClass : 'text-contrast/50 hover:text-contrast/80',
       )}
     >
       {channel === 'premium' && <Crown className="size-4" />}
@@ -64,6 +45,10 @@ function ChannelTab({ channel, isActive }: { channel: SignalChannel; isActive: b
           ? activeUserCount?.paid_connected_count || 0
           : activeUserCount?.free_connected_count || 0}
       </span>
+      {/* 활성 탭 밑줄 — 헤더 하단 테두리와 같은 높이에 맞춰 떨어지도록 nav/탭을 h-full로 맞춤 */}
+      {isActive && (
+        <span className={cn('absolute inset-x-0 bottom-0 h-[2px]', config.tabUnderlineClass)} />
+      )}
     </NavLink>
   );
 }
@@ -75,8 +60,8 @@ export default function Header({ channel }: { channel: SignalChannel }) {
   const [newCommentCount, setNewCommentCount] = useState(MOCK_NEW_COMMENT_COUNT);
 
   return (
-    <div className="bg-background border-border flex flex-shrink-0 items-center justify-between gap-4 border-b px-4 py-3">
-      <div className="flex items-center gap-4">
+    <div className="bg-background border-border flex h-16 flex-shrink-0 items-stretch justify-between gap-4 border-b px-4">
+      <div className="flex items-stretch gap-4">
         <div className="flex items-center gap-3">
           <div className="border-border flex h-10 w-10 items-center justify-center rounded-full border bg-white px-1">
             <img src={logoPng} alt="logo" className="max-w-full" />
@@ -87,7 +72,7 @@ export default function Header({ channel }: { channel: SignalChannel }) {
           </div>
         </div>
 
-        <nav className="border-border flex items-center gap-1 border-l pl-4">
+        <nav className="border-border flex items-stretch gap-2 pl-6">
           {(Object.keys(SIGNAL_CHANNELS) as SignalChannel[]).map((key) => (
             <ChannelTab key={key} channel={key} isActive={key === channel} />
           ))}
@@ -95,9 +80,8 @@ export default function Header({ channel }: { channel: SignalChannel }) {
       </div>
 
       <div className="flex items-center gap-3">
-        <Tooltip text="탭의 숫자는 채널별 현재 접속 중인 사용자 수입니다.">
-          <Info className="h-4 w-4 cursor-pointer text-blue-400" />
-        </Tooltip>
+        {/* 개발 서버 확인용 다크/라이트 모드 토글 */}
+        {/* <ThemeToggle /> */}
 
         <NewCommentsPopover
           open={newCommentsOpen}
@@ -106,22 +90,24 @@ export default function Header({ channel }: { channel: SignalChannel }) {
           onMarkAllRead={() => setNewCommentCount(0)}
         >
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className={cn('relative gap-1.5 text-xs', channelConfig.tabActiveClass)}
+            className="hover:bg-button-background text-contrast/70 hover:text-contrast gap-1.5 text-xs"
           >
-            <Bell className="size-4" />
-            {channelConfig.shortLabel} 새 댓글
-            {newCommentCount > 0 && (
-              <span
-                className={cn(
-                  'flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold',
-                  channelConfig.badgeClass,
-                )}
-              >
-                {newCommentCount}
-              </span>
-            )}
+            <span className="relative flex items-center">
+              <Bell className="size-4" />
+              {newCommentCount > 0 && (
+                <span
+                  className={cn(
+                    'absolute -top-1.5 -right-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full px-1 text-[9px] font-bold text-white',
+                    channelConfig.badgeClass,
+                  )}
+                >
+                  {newCommentCount > 9 ? '9+' : newCommentCount}
+                </span>
+              )}
+            </span>
+            {channelConfig.shortLabel} 시그널 새 댓글
           </Button>
         </NewCommentsPopover>
       </div>

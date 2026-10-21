@@ -57,14 +57,16 @@
   font-weight: 400;
 }
 
-a {
-  color: #2563eb;
-  font-weight: 500;
-  text-decoration: inherit;
-}
+@layer base {
+  a {
+    color: #2563eb;
+    font-weight: 500;
+    text-decoration: inherit;
+  }
 
-a:hover {
-  opacity: 0.8;
+  a:hover {
+    opacity: 0.8;
+  }
 }
 
 body {

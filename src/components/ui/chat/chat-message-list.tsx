@@ -70,12 +70,14 @@ function ChatMessageList({
         onScroll={handleScroll}
         {...props}
       >
-        {isFetchingNextPage && (
-          <div className="flex justify-center py-4">
-            <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-600"></div>
-          </div>
-        )}
-        <div className="flex flex-col gap-2">{children}</div>
+        <div className="flex w-full max-w-4xl flex-col gap-3">
+          {isFetchingNextPage && (
+            <div className="flex justify-center py-4">
+              <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-600"></div>
+            </div>
+          )}
+          {children}
+        </div>
       </div>
       {!isAtBottom && (
         <Button

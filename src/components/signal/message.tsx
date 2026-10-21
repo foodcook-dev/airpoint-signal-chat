@@ -1,12 +1,11 @@
-import { Trash2, Star } from 'lucide-react';
-import {
-  ChatBubble,
-  ChatBubbleAvatar,
-  ChatBubbleTimestamp,
-  ChatBubbleAction,
-  ChatBubbleActionWrapper,
-} from '@/components/ui/chat/chat-bubble';
+import { Trash2, Star, MessageSquare } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { ChatMessage } from '@/types/signal';
+import { formatSignalDate } from '@/utils';
+import logoPng from '@/assets/images/app_logo.png';
+import likePng from '@/assets/images/signal_like.png';
+import goodPng from '@/assets/images/signal_good.png';
+import checkPng from '@/assets/images/signal_check.png';
 import { PollResultMessage, PollMessage } from './poll-message';
 import { DefaultMessage } from './default-message';
 
@@ -15,10 +14,8 @@ interface SignalMessageProps {
   onDelete: (id: string) => void;
   onOpenThread?: (chat: ChatMessage) => void;
   onToggleInvestmentNote?: (messageId: string) => void;
-  // 투자노트는 프리미엄 채널에만 있는 기능 — 무료 채널에서는 버튼 자체를 숨김
   canPickInvestmentNote?: boolean;
-  // 마지막으로 댓글 패널을 연 이후 새로 달린 댓글 수
-  newCommentCount?: number;
+  isSelected?: boolean;
 }
 
 export default function SignalMessage({
@@ -27,6 +24,7 @@ export default function SignalMessage({
   onOpenThread,
   onToggleInvestmentNote,
   canPickInvestmentNote = false,
+  isSelected = false,
 }: SignalMessageProps) {
   const {
     id,
@@ -45,6 +43,14 @@ export default function SignalMessage({
 
   const handleClickCommentCount = () => onOpenThread?.(chat);
 
+  // 카드 전체를 패널 오픈 트리거로 쓴다 — 단, 링크(OG카드/본문 HTML 속 <a>)는 그 자체의
+  // 기본 동작(새 탭 열기)만 하고 패널은 열리지 않아야 해서 클릭 지점이 <a> 안이면 무시한다.
+  // 이미지/버튼처럼 자체 동작이 있는 요소는 각자 onClick에서 stopPropagation으로 막는다.
+  const handleCardClick = (e: React.MouseEvent<HTMLElement>) => {
+    if ((e.target as HTMLElement).closest('a')) return;
+    onOpenThread?.(chat);
+  };
+
   const renderContent = () => {
     // 투표 종료 메시지 (현재는 closed 타입만 존재)
     if (poll_notification?.type === 'closed') {
@@ -59,59 +65,113 @@ export default function SignalMessage({
       <DefaultMessage
         message={message}
         messageHtml={message_with_html}
-        commentCount={comment_count}
-        newCommentCount={0}
         ogTags={og_tags}
         contentImages={content_images}
-        reactions={reactions}
-        onClickCommentCount={handleClickCommentCount}
       />
     );
   };
 
+  const hasReactions = !!(reactions?.like || reactions?.good || reactions?.check);
+
+  const isPollMessage = !!poll || poll_notification?.type === 'closed';
+
   return (
-    <ChatBubble key={id} variant="sent">
-      <ChatBubbleAvatar />
-      <div className="relative flex min-w-0 flex-col gap-2">
+    <article
+      onClick={handleCardClick}
+      className={`group border-contrast/15 bg-background hover:bg-foreground flex cursor-pointer flex-col gap-3 border-b py-4 pr-8 pl-4 transition-colors ${
+        isSelected ? 'bg-primary/5' : ''
+      } ${canPickInvestmentNote && is_investment_note ? 'border-l-[3px] border-l-amber-500 pl-3' : ''}`}
+    >
+      <div className="flex items-center gap-3">
+        <div className="border-border flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border bg-white px-1.5">
+          <img src={logoPng} alt="logo" className="max-w-full" />
+        </div>
+        <span className="text-contrast truncate text-[15px] font-semibold">에어포인트</span>
         {canPickInvestmentNote && is_investment_note && (
-          <div className="absolute -top-2 -right-2 z-10 flex items-center gap-1 rounded-full bg-amber-500 px-2 py-1 text-[11px] font-semibold whitespace-nowrap text-white shadow-sm">
-            <Star className="size-3 fill-white" />
+          <span className="flex flex-shrink-0 items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap text-amber-600">
+            <Star className="size-3 fill-amber-500 text-amber-500" />
             투자노트
-          </div>
+          </span>
         )}
-        {renderContent()}
-        <ChatBubbleTimestamp timestamp={created_at} />
+
+        <div className="ml-auto flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+          {canPickInvestmentNote && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-contrast/50 hover:bg-button-background h-7 w-7 hover:text-amber-500"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleInvestmentNote?.(id);
+              }}
+              title={is_investment_note ? '투자노트 해제' : '투자노트로 픽'}
+            >
+              <Star
+                className={`size-3.5 ${is_investment_note ? 'fill-amber-500 text-amber-500' : ''}`}
+              />
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-contrast/50 hover:bg-button-background h-7 w-7 hover:text-red-500"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(id);
+            }}
+            title="삭제"
+          >
+            <Trash2 className="size-3.5" />
+          </Button>
+        </div>
+        <span className="text-contrast/40 flex flex-shrink-0 items-center text-xs">
+          {formatSignalDate(created_at)}
+        </span>
       </div>
-      <ChatBubbleActionWrapper variant="sent">
-        {canPickInvestmentNote && (
-          <ChatBubbleAction
-            className="h-8 w-auto justify-start gap-1.5 px-2.5 text-xs font-medium whitespace-nowrap"
-            key={`InvestmentNote-${id}`}
-            icon={
-              <>
-                <Star
-                  className={`size-3 ${is_investment_note ? 'fill-amber-500 text-amber-500' : ''}`}
-                />
-                {is_investment_note ? '투자노트 해제' : '투자노트 지정'}
-              </>
-            }
-            onClick={() => onToggleInvestmentNote?.(id)}
-            title={is_investment_note ? '투자노트 해제' : '투자노트로 픽'}
-          />
-        )}
-        <ChatBubbleAction
-          className="h-8 w-auto justify-start gap-1.5 px-2.5 text-xs font-medium whitespace-nowrap"
-          key={`Delete-${id}`}
-          icon={
-            <>
-              <Trash2 className="size-3" />
-              삭제
-            </>
-          }
-          onClick={() => onDelete(id)}
-          title="삭제"
-        />
-      </ChatBubbleActionWrapper>
-    </ChatBubble>
+
+      <div className="pl-[52px]">{renderContent()}</div>
+
+      {(!isPollMessage || hasReactions) && (
+        <div className="text-contrast/60 flex items-center pt-2 pl-[52px] text-xs">
+          {!isPollMessage && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleClickCommentCount();
+              }}
+              className="hover:text-primary flex items-center gap-1.5 transition-colors"
+              title={comment_count > 0 ? `댓글 ${comment_count}개` : '댓글 작성하기'}
+            >
+              <MessageSquare className="size-4" />
+              {comment_count}
+            </button>
+          )}
+
+          {hasReactions && (
+            <div className="ml-auto flex items-center gap-4">
+              {reactions.like > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <img src={likePng} alt="like" className="h-4" />
+                  {reactions.like}
+                </span>
+              )}
+              {reactions.good > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <img src={goodPng} alt="good" className="h-4" />
+                  {reactions.good}
+                </span>
+              )}
+              {reactions.check > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <img src={checkPng} alt="check" className="h-4" />
+                  {reactions.check}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </article>
   );
 }

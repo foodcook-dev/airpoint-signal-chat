@@ -1,5 +1,4 @@
 import { Pin } from 'lucide-react';
-import { ChatBubbleMessage } from '@/components/ui/chat/chat-bubble';
 import { ChatMessage } from '@/types/signal';
 import { formatSignalDate } from '@/utils';
 
@@ -17,7 +16,7 @@ export function PollResultMessage({
     : [];
 
   return (
-    <ChatBubbleMessage>
+    <div>
       <div className="flex items-center gap-2">
         {/* 투표 종료 Title */}
         <div className="flex items-center rounded-md bg-gray-500 px-2 py-1">
@@ -28,7 +27,7 @@ export function PollResultMessage({
 
       {/* 투표 결과 */}
       {sortedSummaries && sortedSummaries.length > 0 && (
-        <div className="border-border bg-muted/10 divide-border/60 mt-3 flex min-w-xl flex-col divide-y rounded-xl border px-3 py-2">
+        <div className="border-border bg-muted/10 divide-border/60 mt-3 flex w-full flex-col divide-y rounded-xl border px-3 py-2">
           {sortedSummaries.map((summary, index) => {
             const percentage = totalVotes > 0 ? (summary.vote_count / totalVotes) * 100 : 0;
 
@@ -76,7 +75,7 @@ export function PollResultMessage({
           })}
         </div>
       )}
-    </ChatBubbleMessage>
+    </div>
   );
 }
 
@@ -93,7 +92,7 @@ export function PollMessage({
   const totalVotes = options?.reduce((sum, o) => sum + o.vote_count, 0) || 0;
 
   return (
-    <ChatBubbleMessage>
+    <div>
       <div className="mb-2 flex flex-col gap-2">
         {/* 투표 Title */}
         <div className="flex items-center justify-between">
@@ -115,7 +114,7 @@ export function PollMessage({
 
       {/* 투표 Option */}
       {options && (
-        <div className="flex min-w-xl flex-col gap-3">
+        <div className="flex w-full flex-col gap-3">
           {options.map(({ id, text, vote_count }) => {
             const percentage = totalVotes > 0 ? (vote_count / totalVotes) * 100 : 0;
 
@@ -133,7 +132,7 @@ export function PollMessage({
                       style={{ width: `${percentage}%` }}
                     />
                   </div>
-                  <span className="min-w-[3rem] text-right text-xs font-semibold">
+                  <span className="text-contrast min-w-[3rem] text-right text-xs font-semibold">
                     {percentage.toFixed(0)}%
                   </span>
                 </div>
@@ -142,6 +141,6 @@ export function PollMessage({
           })}
         </div>
       )}
-    </ChatBubbleMessage>
+    </div>
   );
 }
