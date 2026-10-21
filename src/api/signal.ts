@@ -144,3 +144,8 @@ export async function postCommentBanUser({
   });
   return data;
 }
+
+export async function deleteSignalTalk(signalTalkId: number): Promise<void> {
+  const { data } = await API.delete(`/v2/signal_talks/${signalTalkId}/admin/delete/`);
+  return data;
+}

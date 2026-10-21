@@ -1,9 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient, InfiniteData } from '@tanstack/react-query';
-import { getSignalTalksAdmin, postSignalTalk } from '@/api/signal';
+import { getSignalTalksAdmin, postSignalTalk, deleteSignalTalk } from '@/api/signal';
 import { useSocket } from '@/components/modules/socket-provider';
 import useAlertStore from '@/stores/alert';
+import useConfirmStore from '@/stores/confirm';
 import useSignalDraftStore from '@/stores/signal-draft';
+import type ResponseError from '@/libs/response-error';
 import {
   SelectedImage,
   ChatResponse,
@@ -18,6 +20,7 @@ export const useSignalHandler = (channel: SignalChannel) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollTriggerRef = useRef<() => void>(null);
   const { showAlert } = useAlertStore();
+  const { showConfirm } = useConfirmStore();
 
   const draft = useSignalDraftStore((state) => state.drafts[channel]);
   const updateDraft = useSignalDraftStore((state) => state.updateDraft);
@@ -70,6 +73,17 @@ export const useSignalHandler = (channel: SignalChannel) => {
 
   const { mutateAsync: sendChatMutate } = useMutation({
     mutationFn: (formData: FormData) => postSignalTalk(formData),
+    onSuccess: (newMessage) => {
+      // 삭제와 동일하게 refetch 없이 캐시를 직접 patch — 최신 메시지는 1페이지 맨 앞에 들어간다
+      queryClient.setQueryData<InfiniteData<ChatResponse>>(signalQueryKey, (old) => {
+        if (!old) return old;
+        const [firstPage, ...restPages] = old.pages;
+        return {
+          ...old,
+          pages: [{ ...firstPage, results: [newMessage, ...firstPage.results] }, ...restPages],
+        };
+      });
+    },
   });
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -111,8 +125,6 @@ export const useSignalHandler = (channel: SignalChannel) => {
         fileInputRef.current.value = '';
       }
 
-      await signalResponse.refetch();
-
       setTimeout(() => {
         scrollTriggerRef.current?.();
       }, 100);
@@ -124,8 +136,34 @@ export const useSignalHandler = (channel: SignalChannel) => {
     }
   };
 
-  const handleDeleteMessage = (_id: string) => {
-    showAlert('삭제 기능은 현재 지원되지 않습니다.');
+  const { mutateAsync: deleteSignalTalkMutate } = useMutation({
+    mutationFn: (signalTalkId: number) => deleteSignalTalk(signalTalkId),
+    onSuccess: (_data, signalTalkId) => {
+      queryClient.setQueryData<InfiniteData<ChatResponse>>(signalQueryKey, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            results: page.results.filter((msg) => msg.id !== String(signalTalkId)),
+          })),
+        };
+      });
+    },
+    onError: (e: ResponseError) => {
+      if (typeof e.error === 'string') showAlert(e.error);
+      else console.error(e);
+    },
+  });
+
+  const handleDeleteMessage = (id: string) => {
+    showConfirm({
+      title: '시그널 삭제',
+      message: '이 시그널을 삭제하시겠습니까? 삭제된 시그널은 복구할 수 없습니다.',
+      onConfirm: () => {
+        deleteSignalTalkMutate(Number(id));
+      },
+    });
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

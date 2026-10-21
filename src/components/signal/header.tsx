@@ -28,15 +28,16 @@ function ChannelTab({ channel, isActive }: { channel: SignalChannel; isActive: b
     <NavLink
       to={`/chat/${channel}`}
       className={cn(
-        'relative flex h-full items-center gap-2 px-2 text-sm font-semibold transition-colors',
+        'relative flex h-full items-center gap-2 px-2 text-sm font-semibold whitespace-nowrap transition-colors',
         isActive ? config.tabTextClass : 'text-contrast/50 hover:text-contrast/80',
       )}
     >
       {channel === 'premium' && <Crown className="size-4" />}
-      {config.label}
+      <span className="@2xl:hidden">{config.shortLabel}</span>
+      <span className="hidden @2xl:inline">{config.label}</span>
       <span
         className={cn(
-          'flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
+          'hidden items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium @lg:flex',
           isActive ? config.badgeClass : 'bg-button-background text-contrast/60',
         )}
       >
@@ -62,13 +63,17 @@ export default function Header({ channel }: { channel: SignalChannel }) {
   return (
     <div className="bg-background border-border flex h-16 flex-shrink-0 items-stretch justify-between gap-4 border-b px-4">
       <div className="flex items-stretch gap-4">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-shrink-0 items-center gap-3">
           <div className="border-border flex h-10 w-10 items-center justify-center rounded-full border bg-white px-1">
             <img src={logoPng} alt="logo" className="max-w-full" />
           </div>
           <div className="flex flex-col">
-            <p className="text-contrast text-sm font-semibold">관리자 시그널 채팅</p>
-            <p className="text-contrast/60 text-xs">메시지를 작성하고 전달하세요.</p>
+            <p className="text-contrast text-sm font-semibold whitespace-nowrap">
+              관리자 시그널 채팅
+            </p>
+            <p className="text-contrast/60 hidden text-xs whitespace-nowrap @xl:block">
+              메시지를 작성하고 전달하세요.
+            </p>
           </div>
         </div>
 
@@ -79,7 +84,7 @@ export default function Header({ channel }: { channel: SignalChannel }) {
         </nav>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-shrink-0 items-center gap-3">
         {/* 개발 서버 확인용 다크/라이트 모드 토글 */}
         {/* <ThemeToggle /> */}
 
@@ -107,7 +112,10 @@ export default function Header({ channel }: { channel: SignalChannel }) {
                 </span>
               )}
             </span>
-            {channelConfig.shortLabel} 시그널 새 댓글
+            {/* 헤더가 좁아지면 버튼 텍스트는 숨기고 벨 아이콘만 남긴다 */}
+            <span className="hidden whitespace-nowrap @lg:inline">
+              {channelConfig.shortLabel} 시그널 새 댓글
+            </span>
           </Button>
         </NewCommentsPopover>
       </div>

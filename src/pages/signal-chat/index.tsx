@@ -51,7 +51,7 @@ export default function SignalChat({ channel }: { channel: SignalChannel }) {
   return (
     <div className="flex w-[100vw]">
       <div
-        className={`bg-background flex h-screen flex-col transition-[width] duration-100 ease-out ${
+        className={`bg-background @container flex h-screen flex-col transition-[width] duration-100 ease-out ${
           selectedChat ? 'w-[calc(100vw-560px)]' : 'w-[100vw]'
         }`}
       >
