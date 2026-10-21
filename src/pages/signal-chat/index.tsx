@@ -5,6 +5,7 @@ import Header from '@/components/signal/header';
 import Message from '@/components/signal/message';
 import InputForm from '@/components/signal/input-form';
 import CommentSection from '@/components/signal/comment-section';
+import InvestmentNoteDialog from '@/components/modules/dialog/investment-note-dialog';
 
 export default function SignalChat({ channel }: { channel: SignalChannel }) {
   const {
@@ -33,7 +34,12 @@ export default function SignalChat({ channel }: { channel: SignalChannel }) {
     loadMoreMessages,
     hasNextPage,
     isFetchingNextPage,
-    handleToggleInvestmentNote,
+
+    // 투자노트 지정 모달
+    investmentNoteTarget,
+    handlePickInvestmentNote,
+    handleCloseInvestmentNoteModal,
+    handleConfirmInvestmentNote,
   } = useSignalHandler(channel);
 
   const handleOpenThread = (message: ChatMessage) => setSelectedChat(message);
@@ -66,7 +72,7 @@ export default function SignalChat({ channel }: { channel: SignalChannel }) {
                 chat={chat}
                 onDelete={handleDeleteMessage}
                 onOpenThread={handleOpenThread}
-                onToggleInvestmentNote={handleToggleInvestmentNote}
+                onPickInvestmentNote={handlePickInvestmentNote}
                 canPickInvestmentNote={canPickInvestmentNote}
                 isSelected={selectedChat?.id === chat.id}
               />
@@ -93,10 +99,17 @@ export default function SignalChat({ channel }: { channel: SignalChannel }) {
         <CommentSection
           selectedChat={selectedChat}
           onClose={handleCloseThread}
-          onToggleInvestmentNote={handleToggleInvestmentNote}
+          onPickInvestmentNote={handlePickInvestmentNote}
           canPickInvestmentNote={canPickInvestmentNote}
         />
       )}
+
+      <InvestmentNoteDialog
+        open={!!investmentNoteTarget}
+        onOpenChange={(open) => !open && handleCloseInvestmentNoteModal()}
+        chatMessage={investmentNoteTarget}
+        onConfirm={handleConfirmInvestmentNote}
+      />
     </div>
   );
 }

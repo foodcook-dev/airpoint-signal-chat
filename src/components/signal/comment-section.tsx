@@ -30,7 +30,7 @@ import { useCommentHandler } from '@/hooks/useCommentHandler';
 interface CommentSectionProps {
   selectedChat: ChatMessage;
   onClose: () => void;
-  onToggleInvestmentNote?: (messageId: string) => void;
+  onPickInvestmentNote?: (chat: ChatMessage) => void;
   // 투자노트는 프리미엄 채널에만 있는 기능 — 무료 채널에서는 버튼 자체를 숨김
   canPickInvestmentNote?: boolean;
 }
@@ -38,18 +38,10 @@ interface CommentSectionProps {
 export default function CommentSection({
   selectedChat,
   onClose,
-  onToggleInvestmentNote,
+  onPickInvestmentNote,
   canPickInvestmentNote = false,
 }: CommentSectionProps) {
-  const {
-    id,
-    message_with_html,
-    message,
-    content_images,
-    created_at,
-    reactions,
-    is_investment_note,
-  } = selectedChat;
+  const { message_with_html, message, content_images, created_at, reactions } = selectedChat;
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   // 선택된 시그널 미리보기는 기본 접힌 상태(인용 바) — 클릭하면 펼쳐서 전체 내용을 본다
   const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
@@ -135,18 +127,14 @@ export default function CommentSection({
             <Button
               variant="ghost"
               size="icon"
-              className={`h-7 w-7 flex-shrink-0 ${
-                is_investment_note
-                  ? 'text-amber-500 hover:text-amber-600'
-                  : 'text-contrast/40 hover:text-amber-500'
-              }`}
+              className="text-contrast/40 h-7 w-7 flex-shrink-0 hover:text-amber-500"
               onClick={(e) => {
                 e.stopPropagation();
-                onToggleInvestmentNote?.(id);
+                onPickInvestmentNote?.(selectedChat);
               }}
-              title={is_investment_note ? '투자노트 해제' : '투자노트로 픽'}
+              title="투자노트로 지정"
             >
-              <Star className={`size-4 ${is_investment_note ? 'fill-amber-500' : ''}`} />
+              <Star className="size-4" />
             </Button>
           )}
           <span className="text-contrast/50 flex-shrink-0 text-[10px]">

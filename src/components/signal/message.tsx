@@ -13,7 +13,7 @@ interface SignalMessageProps {
   chat: ChatMessage;
   onDelete: (id: string) => void;
   onOpenThread?: (chat: ChatMessage) => void;
-  onToggleInvestmentNote?: (messageId: string) => void;
+  onPickInvestmentNote?: (chat: ChatMessage) => void;
   canPickInvestmentNote?: boolean;
   isSelected?: boolean;
 }
@@ -22,14 +22,13 @@ export default function SignalMessage({
   chat,
   onDelete,
   onOpenThread,
-  onToggleInvestmentNote,
+  onPickInvestmentNote,
   canPickInvestmentNote = false,
   isSelected = false,
 }: SignalMessageProps) {
   const {
     id,
     is_notice,
-    is_investment_note,
     comment_count,
     message_with_html,
     message,
@@ -80,19 +79,13 @@ export default function SignalMessage({
       onClick={handleCardClick}
       className={`group border-contrast/15 bg-background hover:bg-foreground flex cursor-pointer flex-col gap-3 border-b py-4 pr-8 pl-4 transition-colors ${
         isSelected ? 'bg-primary/5' : ''
-      } ${canPickInvestmentNote && is_investment_note ? 'border-l-[3px] border-l-amber-500 pl-3' : ''}`}
+      }`}
     >
       <div className="flex items-center gap-3">
         <div className="border-border flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border bg-white px-1.5">
           <img src={logoPng} alt="logo" className="max-w-full" />
         </div>
         <span className="text-contrast truncate text-[15px] font-semibold">에어포인트</span>
-        {canPickInvestmentNote && is_investment_note && (
-          <span className="flex flex-shrink-0 items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap text-amber-600">
-            <Star className="size-3 fill-amber-500 text-amber-500" />
-            투자노트
-          </span>
-        )}
 
         <div className="ml-auto flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
           {canPickInvestmentNote && (
@@ -102,13 +95,11 @@ export default function SignalMessage({
               className="text-contrast/50 hover:bg-button-background h-7 w-7 hover:text-amber-500"
               onClick={(e) => {
                 e.stopPropagation();
-                onToggleInvestmentNote?.(id);
+                onPickInvestmentNote?.(chat);
               }}
-              title={is_investment_note ? '투자노트 해제' : '투자노트로 픽'}
+              title="투자노트로 지정"
             >
-              <Star
-                className={`size-3.5 ${is_investment_note ? 'fill-amber-500 text-amber-500' : ''}`}
-              />
+              <Star className="size-3.5" />
             </Button>
           )}
           <Button

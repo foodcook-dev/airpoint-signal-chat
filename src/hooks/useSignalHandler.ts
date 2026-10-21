@@ -4,7 +4,13 @@ import { getSignalTalksAdmin, postSignalTalk } from '@/api/signal';
 import { useSocket } from '@/components/modules/socket-provider';
 import useAlertStore from '@/stores/alert';
 import useSignalDraftStore from '@/stores/signal-draft';
-import { SelectedImage, ChatResponse, ChatMessage, SignalChannel } from '@/types/signal';
+import {
+  SelectedImage,
+  ChatResponse,
+  ChatMessage,
+  SignalChannel,
+  InvestmentNote,
+} from '@/types/signal';
 import { CHAT_CONSTANTS } from '@/constants/signal';
 import { validateImageFile } from '@/utils';
 
@@ -174,8 +180,21 @@ export const useSignalHandler = (channel: SignalChannel) => {
     }
   }, [signalResponse]);
 
-  // TODO: 실제 API 연동 — 토글 엔드포인트가 정해지면 아래 캐시 업데이트 전후로 요청 추가
-  const handleToggleInvestmentNote = (messageId: string) => {
+  // 투자노트 지정 모달에 띄울 대상 시그널 — null이면 모달이 닫힌 상태
+  const [investmentNoteTarget, setInvestmentNoteTarget] = useState<ChatMessage | null>(null);
+
+  // 투자노트 픽 버튼 클릭 — 상세 입력 모달을 연다
+  const handlePickInvestmentNote = (chat: ChatMessage) => {
+    setInvestmentNoteTarget(chat);
+  };
+
+  const handleCloseInvestmentNoteModal = () => setInvestmentNoteTarget(null);
+
+  // TODO: 실제 API 연동 — 투자노트 생성 엔드포인트가 정해지면 아래 캐시 업데이트 전후로 요청 추가
+  const handleConfirmInvestmentNote = (note: InvestmentNote) => {
+    if (!investmentNoteTarget) return;
+    const messageId = investmentNoteTarget.id;
+
     queryClient.setQueryData<InfiniteData<ChatResponse>>(signalQueryKey, (old) => {
       if (!old) return old;
       return {
@@ -183,11 +202,12 @@ export const useSignalHandler = (channel: SignalChannel) => {
         pages: old.pages.map((page) => ({
           ...page,
           results: page.results.map((msg) =>
-            msg.id === messageId ? { ...msg, is_investment_note: !msg.is_investment_note } : msg,
+            msg.id === messageId ? { ...msg, investment_note: note } : msg,
           ),
         })),
       };
     });
+    setInvestmentNoteTarget(null);
   };
 
   const messageList = signalResponse.data?.pages.flatMap((page) => page.results) || [];
@@ -220,6 +240,11 @@ export const useSignalHandler = (channel: SignalChannel) => {
     loadMoreMessages,
     hasNextPage: signalResponse.hasNextPage,
     isFetchingNextPage: signalResponse.isFetchingNextPage,
-    handleToggleInvestmentNote,
+
+    // 투자노트 지정 모달
+    investmentNoteTarget,
+    handlePickInvestmentNote,
+    handleCloseInvestmentNoteModal,
+    handleConfirmInvestmentNote,
   };
 };
