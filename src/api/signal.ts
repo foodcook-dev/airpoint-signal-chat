@@ -83,6 +83,41 @@ export async function postComment({
   return data;
 }
 
+// 시그널 톡 댓글 수정 — image를 넘기면 새 이미지로 교체, removeImage면 기존 이미지를 지운다.
+// 둘 다 생략하면 이미지는 건드리지 않고 텍스트만 바뀐다.
+export async function patchComment({
+  commentId,
+  content,
+  image,
+  removeImage,
+}: {
+  commentId: number | string;
+  content: string;
+  image?: SelectedImage;
+  removeImage?: boolean;
+}): Promise<unknown> {
+  const shouldTouchImage = !!image || !!removeImage;
+  const formData = new FormData();
+  formData.append('message', content);
+  formData.append('remove_images', shouldTouchImage ? 'true' : 'false');
+
+  if (image) {
+    const blob = await (await fetch(image.url)).blob();
+    formData.append('images', new File([blob], image.name, { type: blob.type }));
+  } else {
+    formData.append('images', '');
+  }
+
+  const { data } = await API.patch(
+    `/v2/signal_talks/comments/${commentId}/admin/update/`,
+    formData,
+    {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    },
+  );
+  return data;
+}
+
 // 댓글 비활성화
 export async function postDeactivateComment(commentId: number): Promise<unknown> {
   const { data } = await API.post(`/talk/signal_talks/comments/${commentId}/deactivate/`);

@@ -7,6 +7,9 @@ export const CHAT_CONSTANTS = {
 
 export const DEFAULT_CHANNEL: SignalChannel = 'premium';
 
+// TODO: 실제 로그인한 관리자 id
+export const ADMIN_USER_ID = 1;
+
 // Tailwind 클래스는 정적 문자열이어야 빌드에 포함되므로 채널별로 전체 클래스를 정의
 export const SIGNAL_CHANNELS: Record<
   SignalChannel,
