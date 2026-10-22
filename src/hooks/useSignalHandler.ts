@@ -1,18 +1,17 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient, InfiniteData } from '@tanstack/react-query';
-import { getSignalTalksAdmin, postSignalTalk, deleteSignalTalk } from '@/api/signal';
+import {
+  getSignalTalksAdmin,
+  postSignalTalk,
+  deleteSignalTalk,
+  postInvestmentNote,
+} from '@/api/signal';
 import { useSocket } from '@/libs/socket-provider';
 import useAlertStore from '@/stores/alert';
 import useConfirmStore from '@/stores/confirm';
 import useSignalDraftStore from '@/stores/signal-draft';
 import type ResponseError from '@/libs/response-error';
-import {
-  SelectedImage,
-  ChatResponse,
-  ChatMessage,
-  SignalChannel,
-  InvestmentNote,
-} from '@/types/signal';
+import { SelectedImage, ChatResponse, ChatMessage, SignalChannel } from '@/types/signal';
 import { CHAT_CONSTANTS } from '@/constants/signal';
 import { validateImageFile } from '@/utils';
 
@@ -228,23 +227,20 @@ export const useSignalHandler = (channel: SignalChannel) => {
 
   const handleCloseInvestmentNoteModal = () => setInvestmentNoteTarget(null);
 
-  // TODO: 실제 API 연동 — 투자노트 생성 엔드포인트가 정해지면 아래 캐시 업데이트 전후로 요청 추가
-  const handleConfirmInvestmentNote = (note: InvestmentNote) => {
-    if (!investmentNoteTarget) return;
-    const messageId = investmentNoteTarget.id;
+  const { mutateAsync: postInvestmentNoteMutate } = useMutation({
+    mutationFn: (params: { title: string; signalTalkId: string }) => postInvestmentNote(params),
+    onSuccess: () => {
+      showAlert('투자노트가 임시저장되었습니다. 세부 내용은 관리 페이지에서 수정해주세요.');
+    },
+    onError: (e: ResponseError) => {
+      if (typeof e.error === 'string') showAlert(e.error);
+      else console.error(e);
+    },
+  });
 
-    queryClient.setQueryData<InfiniteData<ChatResponse>>(signalQueryKey, (old) => {
-      if (!old) return old;
-      return {
-        ...old,
-        pages: old.pages.map((page) => ({
-          ...page,
-          results: page.results.map((msg) =>
-            msg.id === messageId ? { ...msg, investment_note: note } : msg,
-          ),
-        })),
-      };
-    });
+  const handleConfirmInvestmentNote = (title: string) => {
+    if (!investmentNoteTarget) return;
+    postInvestmentNoteMutate({ title, signalTalkId: investmentNoteTarget.id });
     setInvestmentNoteTarget(null);
   };
 

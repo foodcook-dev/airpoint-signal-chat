@@ -11,8 +11,6 @@ export interface ChatMessage {
   message_with_html: string;
   created_at: string;
   is_notice: boolean;
-  // TODO: 백엔드 필드/API 확정 전까지 로컬 전용 — 투자노트 지정 시 입력한 타이틀/내용/이미지
-  investment_note?: InvestmentNote | null;
   og_tags: Array<{
     og_image: string;
     og_title: string;
@@ -124,13 +122,6 @@ export type Reply = {
 export interface SelectedImage {
   url: string;
   name: string;
-}
-
-// 투자노트 지정 시 입력하는 상세 정보 — images 배열의 첫 번째 이미지가 대표(썸네일)로 쓰인다
-export interface InvestmentNote {
-  title: string;
-  content: string;
-  images: SelectedImage[];
 }
 
 export interface ChatResponse {

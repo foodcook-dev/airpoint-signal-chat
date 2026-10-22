@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
-import { Plus, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -11,17 +10,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import useAlertStore from '@/stores/alert';
-import { validateImageFile } from '@/utils';
-import { CHAT_CONSTANTS } from '@/constants/signal';
-import type { ChatMessage, InvestmentNote, SelectedImage } from '@/types/signal';
+import type { ChatMessage } from '@/types/signal';
 
 interface InvestmentNoteDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   chatMessage: ChatMessage | null;
-  onConfirm: (note: InvestmentNote) => void;
+  onConfirm: (title: string) => void;
 }
 
 export default function InvestmentNoteDialog({
@@ -30,64 +25,19 @@ export default function InvestmentNoteDialog({
   chatMessage,
   onConfirm,
 }: InvestmentNoteDialogProps) {
-  const { showAlert } = useAlertStore();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [images, setImages] = useState<SelectedImage[]>([]);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const isTitleInvalid = submitAttempted && !title.trim();
 
-  // 모달을 열 때마다 해당 시그널의 내용/이미지로 초기화한다 — 이미지는 시그널에 첨부된 것을
-  // 최대 개수까지 기본으로 가져온다 (첫 번째 이미지가 대표로 쓰인다)
   useEffect(() => {
-    if (!open || !chatMessage) return;
+    if (!open) return;
     setTitle('');
-    setContent(chatMessage.message);
-    setImages(
-      chatMessage.content_images
-        .slice(0, CHAT_CONSTANTS.MAX_IMAGES)
-        .map((url, index) => ({ url, name: `image-${index + 1}` })),
-    );
-  }, [open, chatMessage]);
-
-  const handleAddImageClick = () => fileInputRef.current?.click();
-
-  const handleAddImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-    const fileArray = Array.from(files);
-
-    if (images.length + fileArray.length > CHAT_CONSTANTS.MAX_IMAGES) {
-      showAlert(`이미지는 최대 ${CHAT_CONSTANTS.MAX_IMAGES}장까지 첨부할 수 있습니다.`);
-      e.target.value = '';
-      return;
-    }
-
-    fileArray.forEach((file) => {
-      const validationError = validateImageFile(file);
-      if (validationError) {
-        showAlert(validationError);
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const result = ev.target?.result as string;
-        if (result) setImages((prev) => [...prev, { url: result, name: file.name }]);
-      };
-      reader.onerror = () => showAlert(`${file.name} 파일 읽기에 실패했습니다.`);
-      reader.readAsDataURL(file);
-    });
-    e.target.value = '';
-  };
-
-  const handleRemoveImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
-  };
+    setSubmitAttempted(false);
+  }, [open]);
 
   const handleReset = () => {
     setTitle('');
-    setContent('');
-    setImages([]);
+    setSubmitAttempted(false);
   };
 
   const handleCancel = () => {
@@ -97,13 +47,12 @@ export default function InvestmentNoteDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !content.trim()) return;
+    if (!title.trim()) {
+      setSubmitAttempted(true);
+      return;
+    }
 
-    onConfirm({
-      title: title.trim(),
-      content: content.trim(),
-      images,
-    });
+    onConfirm(title.trim());
     handleReset();
     onOpenChange(false);
   };
@@ -113,12 +62,15 @@ export default function InvestmentNoteDialog({
       <DialogContent className="sm:max-w-[720px]">
         <DialogHeader>
           <DialogTitle>투자노트 게시</DialogTitle>
-          <DialogDescription>게시글의 제목과 내용을 입력하세요.</DialogDescription>
+          <DialogDescription className="whitespace-pre-line">
+            제목을 입력하면 이 시그널 내용으로 투자노트가 임시저장됩니다.
+            {'\n'}내용과 이미지 수정은 관리 페이지에서 진행해주세요.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="investment-note-title" className="text-contrast">
+              <Label htmlFor="investment-note-title" className="text-contrast font-extralight">
                 제목 <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -126,68 +78,35 @@ export default function InvestmentNoteDialog({
                 placeholder="투자노트 제목을 입력하세요"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="text-contrast"
-                required
+                className={`text-contrast font-extralight ${isTitleInvalid ? 'border-red-500' : ''}`}
               />
+              {isTitleInvalid && <p className="text-xs text-red-500">제목을 입력해주세요.</p>}
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="investment-note-content" className="text-contrast">
-                내용 <span className="text-red-500">*</span>
-              </Label>
-              <Textarea
-                id="investment-note-content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="text-contrast max-h-56 min-h-32 resize-none overflow-y-auto"
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-contrast">
-                  이미지 (첫 번째 이미지가 게시글 썸네일로 사용됩니다)
-                </Label>
-                <span className="text-contrast/50 text-xs">
-                  {images.length}/{CHAT_CONSTANTS.MAX_IMAGES}
-                </span>
+
+            {chatMessage && (
+              <div className="grid gap-2">
+                <Label className="text-contrast font-extralight">내용 (미리보기)</Label>
+                <div className="border-border/60 text-contrast/80 max-h-56 overflow-y-auto rounded-md border px-3 py-2 text-sm whitespace-pre-wrap">
+                  {chatMessage.message || '(내용 없음)'}
+                </div>
               </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleAddImage}
-                className="hidden"
-              />
-              <div className="flex flex-wrap gap-3">
-                {images.map((image, index) => (
-                  <div
-                    key={`${image.url}-${index}`}
-                    className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg"
-                  >
-                    <img src={image.url} alt={image.name} className="h-full w-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(index)}
-                      className="bg-background border-border/60 text-contrast/60 absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border hover:text-red-500"
-                      title="이미지 제거"
+            )}
+
+            {!!chatMessage?.content_images.length && (
+              <div className="grid gap-2">
+                <Label className="text-contrast font-extralight">첨부 이미지 (미리보기)</Label>
+                <div className="flex flex-wrap gap-3">
+                  {chatMessage.content_images.map((url) => (
+                    <div
+                      key={url}
+                      className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg"
                     >
-                      <X className="size-3" />
-                    </button>
-                  </div>
-                ))}
-                {images.length < CHAT_CONSTANTS.MAX_IMAGES && (
-                  <button
-                    type="button"
-                    onClick={handleAddImageClick}
-                    className="border-border/60 text-contrast/40 hover:border-primary hover:text-primary flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-lg border-2 border-dashed transition-colors"
-                    title="이미지 추가"
-                  >
-                    <Plus className="size-5" />
-                  </button>
-                )}
+                      <img src={url} alt="" className="h-full w-full object-cover" />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
           <DialogFooter>
             <Button type="button" variant="gray" onClick={handleCancel}>

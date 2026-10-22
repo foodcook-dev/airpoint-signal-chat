@@ -7,7 +7,14 @@ import type {
   SelectedImage,
 } from '@/types/signal';
 
-// 시그널 톡 목록 (관리자) GET
+// 채널별 현재 접속자 수 GET
+export async function getActiveUserCount(): Promise<ActiveUserCount> {
+  const { data } = await API.get('/talk/signal_talks/active_user_count/');
+
+  return data;
+}
+
+// 시그널 톡 목록 GET
 export async function getSignalTalksAdmin({
   audience,
   page,
@@ -23,16 +30,9 @@ export async function getSignalTalksAdmin({
   return data;
 }
 
-// 시그널 톡 생성 (관리자 발송)
+// 시그널 톡 생성 POST
 export async function postSignalTalk(formData: FormData): Promise<ChatMessage> {
   const { data } = await API.post<ChatMessage>('/talk/signal_talks/create/', formData);
-  return data;
-}
-
-// 채널별 현재 접속자 수
-export async function getActiveUserCount(): Promise<ActiveUserCount> {
-  const { data } = await API.get('/talk/signal_talks/active_user_count/');
-
   return data;
 }
 
@@ -53,7 +53,7 @@ export async function getCommentsAdmin({
   return data;
 }
 
-// 시그널 톡 댓글, 대댓글 생성 — mainCommentId를 넘기면 대댓글로 생성된다.
+// 시그널 톡 댓글, 대댓글 생성 POST
 export async function postComment({
   signalTalkId,
   content,
@@ -83,8 +83,7 @@ export async function postComment({
   return data;
 }
 
-// 시그널 톡 댓글 수정 — image를 넘기면 새 이미지로 교체, removeImage면 기존 이미지를 지운다.
-// 둘 다 생략하면 이미지는 건드리지 않고 텍스트만 바뀐다.
+// 시그널 톡 댓글 수정 PATCH
 export async function patchComment({
   commentId,
   content,
@@ -118,13 +117,13 @@ export async function patchComment({
   return data;
 }
 
-// 댓글 비활성화
+// 댓글 비활성화 POST
 export async function postDeactivateComment(commentId: number): Promise<unknown> {
   const { data } = await API.post(`/talk/signal_talks/comments/${commentId}/deactivate/`);
   return data;
 }
 
-// 사용자 댓글 작성 제한
+// 댓글 작성 제한 POST
 export async function postCommentBanUser({
   userId,
   reason,
@@ -145,7 +144,24 @@ export async function postCommentBanUser({
   return data;
 }
 
+// 시그널톡 삭제
 export async function deleteSignalTalk(signalTalkId: number): Promise<void> {
   const { data } = await API.delete(`/v2/signal_talks/${signalTalkId}/admin/delete/`);
+  return data;
+}
+
+// 투자노트 게시 POST
+export async function postInvestmentNote({
+  title,
+  signalTalkId,
+}: {
+  title: string;
+  signalTalkId: number | string;
+}): Promise<unknown> {
+  const { data } = await API.post('/v2/board/investment-notes/admin/', {
+    category: 3,
+    title,
+    signal_talk_id: signalTalkId,
+  });
   return data;
 }
