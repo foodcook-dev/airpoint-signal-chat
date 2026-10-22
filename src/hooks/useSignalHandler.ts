@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient, InfiniteData } from '@tanstack/react-query';
 import { getSignalTalksAdmin, postSignalTalk, deleteSignalTalk } from '@/api/signal';
-import { useSocket } from '@/components/modules/socket-provider';
+import { useSocket } from '@/libs/socket-provider';
 import useAlertStore from '@/stores/alert';
 import useConfirmStore from '@/stores/confirm';
 import useSignalDraftStore from '@/stores/signal-draft';
