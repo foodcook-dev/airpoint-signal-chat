@@ -7,7 +7,7 @@ import {
   Send,
   MessageSquare,
   ImageIcon,
-  Star,
+  BookMarked,
   ChevronDown,
   ChevronUp,
   Pencil,
@@ -134,7 +134,7 @@ export default function CommentSection({
               }}
               title="투자노트로 지정"
             >
-              <Star className="size-4" />
+              <BookMarked className="size-4" />
             </Button>
           )}
           <span className="text-contrast/50 flex-shrink-0 text-[10px]">
@@ -156,7 +156,7 @@ export default function CommentSection({
         </div>
 
         {isPreviewExpanded && (
-          <div className="bg-foreground/70 flex max-h-[260px] flex-col gap-5 overflow-y-auto px-4 pt-1 pb-5">
+          <div className="bg-foreground/70 flex max-h-[260px] flex-col gap-5 overflow-y-auto px-4 py-5">
             {/* 채팅 메시지 */}
             {message_with_html ? (
               <div

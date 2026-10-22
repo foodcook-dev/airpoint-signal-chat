@@ -7,7 +7,7 @@ import { Crown, Users, Bell } from 'lucide-react';
 import { cn } from '@/libs/auth';
 import { Button } from '@/components/ui/button';
 import NewCommentsPopover from '@/components/modules/new-comments-popover';
-// import { ThemeToggle } from '@/components/modules/theme-toggle';
+import { ThemeToggle } from '@/components/modules/theme-toggle';
 import { SIGNAL_CHANNELS } from '@/constants/signal';
 import type { SignalChannel } from '@/types/signal';
 
@@ -86,7 +86,7 @@ export default function Header({ channel }: { channel: SignalChannel }) {
 
       <div className="flex flex-shrink-0 items-center gap-3">
         {/* 개발 서버 확인용 다크/라이트 모드 토글 */}
-        {/* <ThemeToggle /> */}
+        <ThemeToggle />
 
         <NewCommentsPopover
           open={newCommentsOpen}

@@ -1,4 +1,4 @@
-import { Trash2, Star, MessageSquare } from 'lucide-react';
+import { Trash2, BookMarked, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatMessage } from '@/types/signal';
 import { formatSignalDate } from '@/utils';
@@ -77,15 +77,15 @@ export default function SignalMessage({
   return (
     <article
       onClick={handleCardClick}
-      className={`group border-contrast/15 bg-background hover:bg-foreground flex cursor-pointer flex-col gap-3 border-b py-4 pr-8 pl-4 transition-colors ${
+      className={`group border-contrast/15 bg-background hover:bg-foreground flex cursor-pointer flex-col gap-2 border-b p-4 transition-colors ${
         isSelected ? 'bg-primary/5' : ''
       }`}
     >
       <div className="flex items-center gap-3">
-        <div className="border-border flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border bg-white px-1.5">
+        <div className="border-border flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border bg-white px-1.5">
           <img src={logoPng} alt="logo" className="max-w-full" />
         </div>
-        <span className="text-contrast truncate text-[15px] font-semibold">에어포인트</span>
+        <span className="text-contrast truncate text-[14px] font-semibold">에어포인트</span>
 
         <div className="ml-auto flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
           {canPickInvestmentNote && (
@@ -99,7 +99,7 @@ export default function SignalMessage({
               }}
               title="투자노트로 지정"
             >
-              <Star className="size-3.5" />
+              <BookMarked className="size-3.5" />
             </Button>
           )}
           <Button
@@ -120,10 +120,10 @@ export default function SignalMessage({
         </span>
       </div>
 
-      <div className="pl-[52px]">{renderContent()}</div>
+      <div className="pl-11">{renderContent()}</div>
 
       {(!isPollMessage || hasReactions) && (
-        <div className="text-contrast/60 flex items-center pt-2 pl-[52px] text-xs">
+        <div className="text-contrast/60 flex items-center pt-2 pl-11 text-xs">
           {!isPollMessage && (
             <button
               type="button"
