@@ -51,6 +51,22 @@ export interface ChatMessage {
   };
 }
 
+// 투표 상세 (getSignalPollDetail 응답) — 상세 패널에서만 투표 진행률을 보여줄 때 쓴다
+export interface SignalPollDetail {
+  id: number;
+  title: string;
+  content: string;
+  is_multiple: boolean;
+  created_at: string;
+  end_date: string;
+  is_closed: boolean;
+  options: Array<{
+    id: number;
+    text: string;
+    vote_count: number;
+  }>;
+}
+
 // 소켓 'signal_reaction_update' 이벤트 페이로드 — 리액션이 추가/삭제될 때마다 하나씩 온다
 export interface SignalReactionUpdateEvent {
   signal_talk_id: number;

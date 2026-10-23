@@ -5,6 +5,7 @@ import type {
   ChatResponse,
   CommentResponse,
   SelectedImage,
+  SignalPollDetail,
 } from '@/types/signal';
 
 // 채널별 현재 접속자 수 GET
@@ -163,5 +164,15 @@ export async function postInvestmentNote({
     title,
     signal_talk_id: signalTalkId,
   });
+  return data;
+}
+
+// 투표 상세 — 상세 패널에서 투표 진행률을 보여줄 때 사용 (시그널 리스트에는 노출하지 않음)
+export async function getSignalPollDetail({
+  pollId,
+}: {
+  pollId: string | number;
+}): Promise<SignalPollDetail> {
+  const { data } = await API.get<SignalPollDetail>(`/v2/signal_talk_polls/${pollId}/admin/`);
   return data;
 }

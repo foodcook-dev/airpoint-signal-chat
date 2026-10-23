@@ -101,6 +101,7 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
     else console.error(e);
   };
 
+  // 투표가 있는 시그널은 댓글을 작성할 수 없으므로 댓글 목록 자체를 조회하지 않는다
   const commentResponse = useInfiniteQuery<CommentResponse>({
     queryKey: ['comment', selectedChat?.id],
     queryFn: ({ pageParam = 1 }) =>
@@ -110,7 +111,7 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
       return undefined;
     },
     initialPageParam: 1,
-    enabled: !!selectedChat?.id,
+    enabled: !!selectedChat?.id && !selectedChat.poll,
   });
 
   // 명시적으로 새로고침 버튼을 눌렀을 때만 로딩 상태로 취급한다.

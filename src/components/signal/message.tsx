@@ -71,7 +71,7 @@ export default function SignalMessage({
   };
 
   const hasReactions = !!(reactions?.like || reactions?.good || reactions?.check);
-
+  // 투표(진행 중/종료 결과 포함) 시그널은 투자노트 지정도 막는다
   const isPollMessage = !!poll || poll_notification?.type === 'closed';
 
   return (
@@ -88,7 +88,7 @@ export default function SignalMessage({
         <span className="text-contrast truncate text-[14px] font-semibold">에어포인트</span>
 
         <div className="ml-auto flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-          {canPickInvestmentNote && (
+          {canPickInvestmentNote && !isPollMessage && (
             <Button
               variant="ghost"
               size="icon"

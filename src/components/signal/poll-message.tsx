@@ -1,4 +1,4 @@
-import { Pin } from 'lucide-react';
+import { Pin, BarChart3 } from 'lucide-react';
 import { ChatMessage } from '@/types/signal';
 import { formatSignalDate } from '@/utils';
 
@@ -19,8 +19,9 @@ export function PollResultMessage({
     <div>
       <div className="flex items-center gap-2">
         {/* 투표 종료 Title */}
-        <div className="flex items-center rounded-md bg-gray-500 px-2 py-1">
-          <span className="text-xs font-medium text-white">투표 종료</span>
+        <div className="bg-contrast/10 text-contrast/60 flex items-center gap-1 rounded-full px-2.5 py-1">
+          <BarChart3 className="size-3" />
+          <span className="text-xs font-semibold">투표 종료</span>
         </div>
         <span className="text-contrast text-sm font-semibold">{message}</span>
       </div>
@@ -89,7 +90,6 @@ export function PollMessage({
   isNotice: boolean;
 }) {
   const { title = '', content = '', end_date, options = [] } = poll;
-  const totalVotes = options?.reduce((sum, o) => sum + o.vote_count, 0) || 0;
 
   return (
     <div>
@@ -97,9 +97,10 @@ export function PollMessage({
         {/* 투표 Title */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex items-center rounded-md bg-gray-500 px-2 py-1">
-              {isNotice && <Pin className="mr-1 h-3 w-3 text-white" />}
-              <span className="text-xs font-medium text-white">투표</span>
+            <div className="bg-primary/10 text-primary flex items-center gap-1 rounded-full px-2.5 py-1">
+              {isNotice && <Pin className="size-3" />}
+              <BarChart3 className="size-3" />
+              <span className="text-xs font-semibold">공지</span>
             </div>
             <span className="text-contrast text-sm font-semibold">{title}</span>
           </div>
@@ -112,33 +113,14 @@ export function PollMessage({
         {content && <span className="text-contrast/80 text-sm">{content}</span>}
       </div>
 
-      {/* 투표 Option */}
-      {options && (
-        <div className="flex w-full flex-col gap-3">
-          {options.map(({ id, text, vote_count }) => {
-            const percentage = totalVotes > 0 ? (vote_count / totalVotes) * 100 : 0;
-
-            return (
-              <div key={id} className="border-border flex w-full flex-col gap-1 border-t pt-2">
-                <div className="flex items-baseline justify-between">
-                  <p className="text-contrast text-sm">{text}</p>
-                  <span className="text-contrast/70 text-[10px]">{vote_count}표</span>
-                </div>
-
-                <div className="flex flex-1 items-center gap-1.5">
-                  <div className="bg-muted/50 h-2 w-full overflow-hidden rounded-full">
-                    <div
-                      className="bg-primary h-full rounded-full"
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                  <span className="text-contrast min-w-[3rem] text-right text-xs font-semibold">
-                    {percentage.toFixed(0)}%
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+      {/* 투표 Option — 진행률/투표수는 상세 패널에서만 보여주고 리스트에는 옵션만 노출 */}
+      {options.length > 0 && (
+        <div className="flex w-full flex-col gap-2">
+          {options.map(({ id, text }) => (
+            <div key={id} className="border-border border-t pt-2">
+              <p className="text-contrast text-sm">{text}</p>
+            </div>
+          ))}
         </div>
       )}
     </div>

@@ -65,14 +65,18 @@ export default function CommentSection({
   } = useCommentHandler({
     selectedChat,
   });
+  // 투표가 있는 시그널은 댓글을 작성할 수 없다
+  const isPoll = !!selectedChat.poll;
 
   return (
     <div className="border-border/80 bg-background flex h-screen w-[560px] flex-col border-l">
       {/* 헤더 — 제목과 댓글 수를 한 줄로 합침. 시그널 헤더(h-16)와 높이를 맞춤 */}
       <div className="border-border flex h-16 flex-shrink-0 items-center justify-between border-b px-4">
         <div className="flex items-baseline gap-1.5">
-          <span className="text-contrast text-sm font-semibold">댓글</span>
-          <span className="text-contrast/50 text-xs">{commentCount}개</span>
+          <span className="text-contrast text-sm font-semibold">
+            {isPoll ? '투표 상세' : '댓글'}
+          </span>
+          {!isPoll && <span className="text-contrast/50 text-xs">{commentCount}개</span>}
         </div>
         <Button
           variant="ghost"
@@ -91,65 +95,69 @@ export default function CommentSection({
         onImageClick={setSelectedImage}
       />
 
-      {/* 댓글 리스트 */}
-      <div
-        ref={scrollContainerRef}
-        className="relative flex min-h-0 flex-1 flex-col overflow-y-auto"
-      >
-        {isFetching && (
-          <div className="bg-background/50 absolute inset-0 z-10 flex items-center justify-center backdrop-blur-sm">
-            <Spinner size="md" />
+      {!isPoll && (
+        <>
+          {/* 댓글 리스트 */}
+          <div
+            ref={scrollContainerRef}
+            className="relative flex min-h-0 flex-1 flex-col overflow-y-auto"
+          >
+            {isFetching && (
+              <div className="bg-background/50 absolute inset-0 z-10 flex items-center justify-center backdrop-blur-sm">
+                <Spinner size="md" />
+              </div>
+            )}
+            {commentList.length > 0 && (
+              <>
+                {commentList.map((comment) => (
+                  <CommentItem
+                    key={comment.id}
+                    comment={comment}
+                    replyTarget={replyTarget}
+                    replyValue={replyValue}
+                    onChangeReplyValue={setReplyValue}
+                    replyImage={replyImage}
+                    replyFileInputRef={replyFileInputRef}
+                    onReplyImageSelect={handleReplyImageSelect}
+                    onReplyImageRemove={handleReplyImageRemove}
+                    onReplyImageButtonClick={handleReplyImageButtonClick}
+                    onOpenReply={handleOpenReply}
+                    onCancelReply={handleCancelReply}
+                    onSubmitReply={handleSubmitReply}
+                    isSubmittingReply={isSubmittingReply}
+                    onDisableComment={handleDisableComment}
+                    onBlockUser={handleBlockUser}
+                    onStartEditComment={handleStartEditComment}
+                    onStartEditReply={handleStartEditReply}
+                    onImageClick={setSelectedImage}
+                  />
+                ))}
+                <div ref={commentObserverRef} className="h-4" />
+              </>
+            )}
+            {!isFetching && commentList.length === 0 && (
+              <div className="text-contrast/40 flex flex-1 flex-col items-center justify-center gap-2 py-10">
+                <MessageSquare className="size-7" strokeWidth={1.5} />
+                <p className="text-xs">아직 작성된 댓글이 없습니다.</p>
+              </div>
+            )}
           </div>
-        )}
-        {commentList.length > 0 && (
-          <>
-            {commentList.map((comment) => (
-              <CommentItem
-                key={comment.id}
-                comment={comment}
-                replyTarget={replyTarget}
-                replyValue={replyValue}
-                onChangeReplyValue={setReplyValue}
-                replyImage={replyImage}
-                replyFileInputRef={replyFileInputRef}
-                onReplyImageSelect={handleReplyImageSelect}
-                onReplyImageRemove={handleReplyImageRemove}
-                onReplyImageButtonClick={handleReplyImageButtonClick}
-                onOpenReply={handleOpenReply}
-                onCancelReply={handleCancelReply}
-                onSubmitReply={handleSubmitReply}
-                isSubmittingReply={isSubmittingReply}
-                onDisableComment={handleDisableComment}
-                onBlockUser={handleBlockUser}
-                onStartEditComment={handleStartEditComment}
-                onStartEditReply={handleStartEditReply}
-                onImageClick={setSelectedImage}
-              />
-            ))}
-            <div ref={commentObserverRef} className="h-4" />
-          </>
-        )}
-        {!isFetching && commentList.length === 0 && (
-          <div className="text-contrast/40 flex flex-1 flex-col items-center justify-center gap-2 py-10">
-            <MessageSquare className="size-7" strokeWidth={1.5} />
-            <p className="text-xs">아직 작성된 댓글이 없습니다.</p>
-          </div>
-        )}
-      </div>
 
-      <CommentComposer
-        editingCommentId={editingCommentId}
-        onCancelEdit={handleCancelCommentEdit}
-        commentImage={commentImage}
-        onImageRemove={handleCommentImageRemove}
-        newComment={newComment}
-        onChangeComment={setNewComment}
-        commentFileInputRef={commentFileInputRef}
-        onImageSelect={handleCommentImageSelect}
-        onImageButtonClick={handleCommentImageButtonClick}
-        onSubmit={handleSubmitComment}
-        isSubmitting={isSubmittingComment}
-      />
+          <CommentComposer
+            editingCommentId={editingCommentId}
+            onCancelEdit={handleCancelCommentEdit}
+            commentImage={commentImage}
+            onImageRemove={handleCommentImageRemove}
+            newComment={newComment}
+            onChangeComment={setNewComment}
+            commentFileInputRef={commentFileInputRef}
+            onImageSelect={handleCommentImageSelect}
+            onImageButtonClick={handleCommentImageButtonClick}
+            onSubmit={handleSubmitComment}
+            isSubmitting={isSubmittingComment}
+          />
+        </>
+      )}
 
       {selectedUser && (
         <UserBlockDialog
