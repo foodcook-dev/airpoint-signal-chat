@@ -51,6 +51,13 @@ export interface ChatMessage {
   };
 }
 
+// 투자노트 게시 (postInvestmentNote) 응답 — admin_url은 BASE_URL과 합쳐서 관리 페이지 새 창을 연다
+export interface InvestmentNotePostResult {
+  id: number;
+  status: string;
+  admin_url: string;
+}
+
 // 투표 상세 (getSignalPollDetail 응답) — 상세 패널에서만 투표 진행률을 보여줄 때 쓴다
 export interface SignalPollDetail {
   id: number;

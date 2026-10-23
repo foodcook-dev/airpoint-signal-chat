@@ -7,6 +7,7 @@ import {
   postInvestmentNote,
 } from '@/api/signal';
 import { useSocket } from '@/libs/socket-provider';
+import { PATH } from '@/constants/api-path';
 import useAlertStore from '@/stores/alert';
 import useConfirmStore from '@/stores/confirm';
 import useSignalDraftStore from '@/stores/signal-draft';
@@ -229,8 +230,14 @@ export const useSignalHandler = (channel: SignalChannel) => {
 
   const { mutateAsync: postInvestmentNoteMutate } = useMutation({
     mutationFn: (params: { title: string; signalTalkId: string }) => postInvestmentNote(params),
-    onSuccess: () => {
-      showAlert('투자노트가 임시저장되었습니다. 세부 내용은 관리 페이지에서 수정해주세요.');
+    onSuccess: (data) => {
+      showConfirm({
+        title: '투자노트 임시저장 완료',
+        message: '투자노트가 임시저장되었습니다. 관리 페이지로 이동하시겠습니까?',
+        onConfirm: () => {
+          window.open(`${PATH.base}${data.admin_url}`, '_blank');
+        },
+      });
     },
     onError: (e: ResponseError) => {
       if (typeof e.error === 'string') showAlert(e.error);

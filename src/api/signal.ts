@@ -4,6 +4,7 @@ import type {
   ChatMessage,
   ChatResponse,
   CommentResponse,
+  InvestmentNotePostResult,
   SelectedImage,
   SignalPollDetail,
 } from '@/types/signal';
@@ -173,8 +174,8 @@ export async function postInvestmentNote({
 }: {
   title: string;
   signalTalkId: number | string;
-}): Promise<unknown> {
-  const { data } = await API.post('/v2/board/investment-notes/admin/', {
+}): Promise<InvestmentNotePostResult> {
+  const { data } = await API.post<InvestmentNotePostResult>('/v2/board/investment-notes/admin/', {
     category: 3,
     title,
     signal_talk_id: signalTalkId,
