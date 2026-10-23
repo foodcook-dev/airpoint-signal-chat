@@ -81,18 +81,18 @@ export default function SignalMessage({
         isSelected ? 'bg-primary/5' : ''
       }`}
     >
-      <div className="flex items-center gap-3">
-        <div className="border-border flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border bg-white px-1.5">
+      <div className="flex items-center gap-2">
+        <div className="border-border flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border bg-white px-1">
           <img src={logoPng} alt="logo" className="max-w-full" />
         </div>
-        <span className="text-contrast truncate text-[14px] font-semibold">에어포인트</span>
+        <span className="text-contrast truncate text-xs font-semibold">에어포인트</span>
 
         <div className="ml-auto flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
           {canPickInvestmentNote && !isPollMessage && (
             <Button
               variant="ghost"
               size="icon"
-              className="text-contrast/50 hover:bg-button-background h-7 w-7 hover:text-amber-500"
+              className="text-contrast/50 hover:bg-button-background h-6 w-6 hover:text-amber-500"
               onClick={(e) => {
                 e.stopPropagation();
                 onPickInvestmentNote?.(chat);
@@ -105,7 +105,7 @@ export default function SignalMessage({
           <Button
             variant="ghost"
             size="icon"
-            className="text-contrast/50 hover:bg-button-background h-7 w-7 hover:text-red-500"
+            className="text-contrast/50 hover:bg-button-background h-6 w-6 hover:text-red-500"
             onClick={(e) => {
               e.stopPropagation();
               onDelete(id);
@@ -120,10 +120,10 @@ export default function SignalMessage({
         </span>
       </div>
 
-      <div className="pl-11">{renderContent()}</div>
+      <div className="pl-8">{renderContent()}</div>
 
       {(!isPollMessage || hasReactions) && (
-        <div className="text-contrast/60 flex items-center pt-2 pl-11 text-xs">
+        <div className="text-contrast/60 flex items-center pt-2 pl-8 text-xs">
           {!isPollMessage && (
             <button
               type="button"

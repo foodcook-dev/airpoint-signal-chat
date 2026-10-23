@@ -99,11 +99,11 @@ export function DefaultMessage({
       {/* 메시지 내용 — 줄바꿈 유지 + 긴 링크 등 안 끊기는 토큰도 꺾이도록 */}
       {messageHtml ? (
         <div
-          className="text-contrast text-sm leading-relaxed break-words whitespace-pre-wrap"
+          className="text-contrast text-[13px] leading-relaxed break-words whitespace-pre-wrap"
           dangerouslySetInnerHTML={{ __html: messageHtml }}
         />
       ) : (
-        <span className="text-contrast text-sm leading-relaxed break-words whitespace-pre-wrap">
+        <span className="text-contrast text-[13px] leading-relaxed break-words whitespace-pre-wrap">
           {message}
         </span>
       )}
