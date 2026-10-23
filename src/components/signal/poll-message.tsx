@@ -1,6 +1,7 @@
 import { Pin, BarChart3 } from 'lucide-react';
 import { ChatMessage } from '@/types/signal';
 import { formatSignalDate } from '@/utils';
+import { cn } from '@/libs/auth';
 
 export function PollResultMessage({
   pollResult,
@@ -28,7 +29,7 @@ export function PollResultMessage({
 
       {/* 투표 결과 */}
       {sortedSummaries && sortedSummaries.length > 0 && (
-        <div className="border-border bg-muted/10 divide-border/60 mt-3 flex w-full flex-col divide-y rounded-xl border px-3 py-2">
+        <div className="border-border bg-background mt-3 flex w-full flex-col gap-1.5 rounded-xl border px-2 py-2">
           {sortedSummaries.map((summary, index) => {
             const percentage = totalVotes > 0 ? (summary.vote_count / totalVotes) * 100 : 0;
 
@@ -46,30 +47,38 @@ export function PollResultMessage({
                 rank = startIndex + 1;
               }
             }
+            const isTop = rank === 1;
 
             return (
-              <div key={index} className="flex w-full gap-3 py-2 first:pt-0 last:pb-0">
-                <div className="bg-primary flex h-9 w-9 min-w-[2.25rem] items-center justify-center rounded-full">
-                  <span className="text-xs font-bold text-white">{rank}위</span>
-                </div>
-
-                <div className="flex flex-1 flex-col gap-1">
-                  <div className="flex items-baseline justify-between">
-                    <p className="text-contrast text-[13px] font-semibold">{summary.option_text}</p>
-                    <span className="text-contrast/70 text-[10px]">{summary.vote_count}표</span>
-                  </div>
-
-                  <div className="mt-0.5 flex flex-1 items-center gap-2">
-                    <div className="bg-muted/50 h-2 w-full overflow-hidden rounded-full">
-                      <div
-                        className="bg-primary h-full rounded-full"
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                    <span className="text-contrast min-w-[3rem] text-right text-xs font-bold">
-                      {percentage.toFixed(0)}%
-                    </span>
-                  </div>
+              <div
+                key={index}
+                className="border-border/60 relative flex items-center overflow-hidden rounded-lg border px-2 py-1.5"
+              >
+                <div
+                  className={cn(
+                    'absolute inset-y-0 left-0 rounded-lg',
+                    isTop ? 'bg-primary/15' : 'bg-contrast/[0.04]',
+                  )}
+                  style={{ width: `${percentage}%` }}
+                />
+                <div className="relative flex w-full items-center gap-1.5">
+                  <span
+                    className={cn(
+                      'w-6 flex-shrink-0 text-[10px] font-bold',
+                      isTop ? 'text-primary' : 'text-contrast/40',
+                    )}
+                  >
+                    {rank}위
+                  </span>
+                  <p className="text-contrast flex-1 truncate text-[12px] font-medium">
+                    {summary.option_text}
+                  </p>
+                  <span className="text-contrast/60 flex-shrink-0 text-[10px]">
+                    {summary.vote_count}표
+                  </span>
+                  <span className="text-contrast min-w-[2.5rem] flex-shrink-0 text-right text-xs font-bold">
+                    {percentage.toFixed(0)}%
+                  </span>
                 </div>
               </div>
             );
