@@ -11,6 +11,7 @@ import { PATH } from '@/constants/api-path';
 import useAlertStore from '@/stores/alert';
 import useConfirmStore from '@/stores/confirm';
 import useSignalDraftStore from '@/stores/signal-draft';
+import useNewCommentsStore from '@/stores/new-comments';
 import type ResponseError from '@/libs/response-error';
 import { SelectedImage, ChatResponse, ChatMessage, SignalChannel } from '@/types/signal';
 import { CHAT_CONSTANTS } from '@/constants/signal';
@@ -253,7 +254,21 @@ export const useSignalHandler = (channel: SignalChannel) => {
 
   const messageList = signalResponse.data?.pages.flatMap((page) => page.results) || [];
   const selectedChat = messageList.find((msg) => msg.id === selectedChatId) || null;
-  const setSelectedChat = (chat: ChatMessage | null) => setSelectedChatId(chat?.id ?? null);
+
+  // 상세방을 나올 때(다른 시그널로 바꾸거나 패널을 닫을 때)만 그 시그널의 NEW 표시를 지운다 —
+  // 패널을 열어두고 보는 동안에는 계속 떠 있어야 한다. useEffect cleanup으로 하면 StrictMode의
+  // 개발 모드 mount→cleanup→mount 시뮬레이션 때문에 패널을 여는 순간 지워져버려서, 실제 "닫기"
+  // 액션(이 함수 호출)에 직접 걸어야 한다.
+  const setSelectedChat = (chat: ChatMessage | null) => {
+    setSelectedChatId((prevId) => {
+      const nextId = chat?.id ?? null;
+      if (prevId && prevId !== nextId) {
+        useNewCommentsStore.getState().clearSignalNew(prevId);
+        useNewCommentsStore.getState().clearSignal(prevId);
+      }
+      return nextId;
+    });
+  };
 
   return {
     scrollTriggerRef,

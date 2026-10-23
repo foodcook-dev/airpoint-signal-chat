@@ -414,6 +414,9 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
     }
   }, [commentResponse.isLoading, isManualRefetching]);
 
+  // 목록 카드/댓글·대댓글의 NEW 표시 clear는 useSignalHandler의 setSelectedChat에서
+  // 상세방을 나오는 실제 액션(다른 시그널로 전환/패널 닫기)에 맞춰 처리한다.
+
   return {
     isFetching: commentResponse.isLoading || isManualRefetching,
     selectedUser,

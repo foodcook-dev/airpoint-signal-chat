@@ -3,6 +3,7 @@ import { io, Socket } from 'socket.io-client';
 import { useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query';
 import { PATH } from '@/constants/api-path';
 import { ADMIN_DEBUG_TOKEN } from '@/libs/client';
+import useNewCommentsStore from '@/stores/new-comments';
 import type {
   ChatResponse,
   SignalReactionUpdateEvent,
@@ -186,9 +187,12 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     });
 
     // 시그널 댓글 수 변경 — 목록(메시지 버블)의 comment_count만 patch한다. 상세 댓글 패널의
-    // 실제 내용은 create/update/delete 이벤트가 각각 직접 patch하므로 여기서는 손대지 않는다
+    // 실제 내용은 create/update/delete 이벤트가 각각 직접 patch하므로 여기서는 손대지 않는다.
+    // NEW 표시도 여기서 같이 켠다 — create_signal_talk_comment는 그 시그널 방(join_room)에
+    // 들어가 있어야만(=패널을 연 적 있어야만) 오는데, 이 이벤트는 목록 구독(join_v2_signal_talk_list)
+    // 만으로도 항상 오기 때문에 패널을 안 열어본 시그널의 신규 댓글은 이 카운트 증가로만 감지할 수 있다.
     socket.on('update_comment_count', (payload: SignalCommentCountUpdateEvent) => {
-      const { signal_talk_id, comment_count } = payload;
+      const { signal_talk_id, v2_comment_count } = payload;
 
       queryClient.setQueriesData<InfiniteData<ChatResponse>>({ queryKey: ['signal'] }, (old) => {
         if (!old) return old;
@@ -196,9 +200,13 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           ...old,
           pages: old.pages.map((page) => ({
             ...page,
-            results: page.results.map((msg) =>
-              String(msg.id) === String(signal_talk_id) ? { ...msg, comment_count } : msg,
-            ),
+            results: page.results.map((msg) => {
+              if (String(msg.id) !== String(signal_talk_id)) return msg;
+              if (v2_comment_count > msg.comment_count) {
+                useNewCommentsStore.getState().markSignalNew(signal_talk_id);
+              }
+              return { ...msg, comment_count: v2_comment_count };
+            }),
           })),
         };
       });
@@ -212,6 +220,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       (payload: SignalCommentEvent | SignalCommentEvent[]) => {
         const comment = firstOf(payload);
         if (!comment) return;
+
+        // hasNewComment/isNew 둘 다 캐시가 아니라 별도 스토어에 — refetch나 onAny의 전체
+        // invalidate로 목록이 서버 데이터로 통째로 교체돼도(댓글 작성, 무관한 다른 이벤트 등) 안 지워지게 한다
+        useNewCommentsStore.getState().markSignalNew(comment.signal_talk_id);
+        useNewCommentsStore.getState().markNew(comment.signal_talk_id, comment.id);
 
         patchCommentThread(queryClient, comment.signal_talk_id, (old) => {
           if (comment.main_comment_id != null) {

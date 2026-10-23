@@ -6,6 +6,8 @@ import logoPng from '@/assets/images/app_logo.png';
 import likePng from '@/assets/images/signal_like.png';
 import goodPng from '@/assets/images/signal_good.png';
 import checkPng from '@/assets/images/signal_check.png';
+import useNewCommentsStore from '@/stores/new-comments';
+import { NewBadge } from './new-badge';
 import { PollResultMessage, PollMessage } from './poll-message';
 import { DefaultMessage } from './default-message';
 
@@ -39,6 +41,7 @@ export default function SignalMessage({
     poll_notification,
     reactions,
   } = chat;
+  const hasNewComment = useNewCommentsStore((state) => state.newSignalIds.has(String(id)));
 
   const handleClickCommentCount = () => onOpenThread?.(chat);
 
@@ -77,10 +80,16 @@ export default function SignalMessage({
   return (
     <article
       onClick={handleCardClick}
-      className={`group border-contrast/15 bg-background hover:bg-foreground flex cursor-pointer flex-col gap-2 border-b p-4 transition-colors ${
-        isSelected ? 'bg-primary/5' : ''
+      className={`group border-contrast/15 bg-background hover:bg-foreground relative flex cursor-pointer flex-col gap-2 border-b p-4 transition-colors ${
+        isSelected || hasNewComment ? 'bg-primary/5' : ''
       }`}
     >
+      {hasNewComment && (
+        <span
+          aria-hidden
+          className="bg-primary absolute top-2 bottom-2 left-0 w-1 rounded-r-full"
+        />
+      )}
       <div className="flex items-center gap-2">
         <div className="border-border flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border bg-white px-1">
           <img src={logoPng} alt="logo" className="max-w-full" />
@@ -136,6 +145,7 @@ export default function SignalMessage({
             >
               <MessageSquare className="size-4" />
               {comment_count}
+              {hasNewComment && <NewBadge />}
             </button>
           )}
 

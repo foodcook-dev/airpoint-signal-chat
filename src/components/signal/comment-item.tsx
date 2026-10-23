@@ -4,7 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { formatCommentTime } from '@/utils';
 import { ADMIN_USER_ID } from '@/constants/signal';
+import { cn } from '@/libs/auth';
 import adminBadge from '@/assets/icons/admin-badge.svg';
+import useNewCommentsStore from '@/stores/new-comments';
+import { NewBadge } from './new-badge';
 import ReplyItem from './reply-item';
 import type { ReplyTarget } from '@/hooks/useCommentHandler';
 import type { Comment, Reply, SelectedImage } from '@/types/signal';
@@ -66,12 +69,24 @@ export default function CommentItem({
     created_at,
     user_id,
     is_admin_author,
+    signal_talk_id,
   } = comment;
   const isAdminOwned = user_id === ADMIN_USER_ID;
+  const isNew = useNewCommentsStore(
+    (state) => state.newIdsBySignal[String(signal_talk_id)]?.has(id) ?? false,
+  );
   const isReplyComposerOpenForThread = replyTarget?.commentId === id;
 
   return (
-    <div className="border-border/60 group hover:bg-foreground/40 border-b px-4 py-3 transition-colors">
+    <div
+      className={cn(
+        'border-border/60 group hover:bg-foreground/40 relative border-b px-4 py-3 transition-colors',
+        isNew && 'bg-primary/5',
+      )}
+    >
+      {isNew && (
+        <span aria-hidden className="bg-primary absolute top-1.5 bottom-1.5 left-0 w-0.5 rounded-r-full" />
+      )}
       {deleted_at && (
         <div className="text-contrast/50 mb-1 flex items-center gap-0.5">
           <Trash2 className="size-3" />
@@ -91,6 +106,7 @@ export default function CommentItem({
             {is_admin_author && (
               <img src={adminBadge} alt="관리자" className="size-4 flex-shrink-0" />
             )}
+            {isNew && <NewBadge className="ml-0.5" />}
           </div>
           <div className="text-contrast/60 flex gap-1 text-[10px] whitespace-nowrap">
             <p>{formatCommentTime(created_at)}</p>

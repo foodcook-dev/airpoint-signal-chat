@@ -84,10 +84,11 @@ export interface SignalReactionUpdateEvent {
   reactions: ChatMessage['reactions'];
 }
 
-// 소켓 'update_comment_count' 이벤트 페이로드 — 해당 시그널의 댓글이 생성/삭제될 때마다 하나씩 온다
+// 소켓 'update_comment_count' 이벤트 페이로드 — 해당 시그널의 댓글이 생성/삭제될 때마다 하나씩 온다.
+// 실제 필드명은 comment_count가 아니라 v2_comment_count다 (실시간 payload로 직접 확인함).
 export interface SignalCommentCountUpdateEvent {
   signal_talk_id: number;
-  comment_count: number;
+  v2_comment_count: number;
 }
 
 // 소켓 'create_signal_talk_comment' / 'update_signal_talk_comment' / 'delete_signal_talk_comment'

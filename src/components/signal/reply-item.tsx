@@ -3,7 +3,10 @@ import { ReplyIcon } from '@/components/icons/reply-icon';
 import { Button } from '@/components/ui/button';
 import { formatCommentTime } from '@/utils';
 import { ADMIN_USER_ID } from '@/constants/signal';
+import { cn } from '@/libs/auth';
 import adminBadge from '@/assets/icons/admin-badge.svg';
+import useNewCommentsStore from '@/stores/new-comments';
+import { NewBadge } from './new-badge';
 import type { Reply } from '@/types/signal';
 
 interface ReplyItemProps {
@@ -31,9 +34,17 @@ export default function ReplyItem({
   onImageClick,
 }: ReplyItemProps) {
   const isAdminOwned = Number(reply.user_id) === ADMIN_USER_ID;
+  const isNew = useNewCommentsStore(
+    (state) => state.newIdsBySignal[String(reply.signal_talk_id)]?.has(reply.id) ?? false,
+  );
 
   return (
-    <div className="group/reply flex flex-col gap-0.5">
+    <div
+      className={cn(
+        'group/reply flex flex-col gap-0.5 rounded-md transition-colors',
+        isNew && '-mx-2 -my-0.5 bg-primary/5 px-2 py-0.5',
+      )}
+    >
       {reply.deleted_at && (
         <div className="text-contrast/50 flex items-center gap-0.5">
           <Trash2 className="size-3" />
@@ -53,6 +64,7 @@ export default function ReplyItem({
             {reply.is_admin_author && (
               <img src={adminBadge} alt="관리자" className="size-4 flex-shrink-0" />
             )}
+            {isNew && <NewBadge className="ml-0.5" />}
           </div>
           <div className="text-contrast/50 flex gap-1 text-[10px] whitespace-nowrap">
             <p>{formatCommentTime(reply.created_at)}</p>
