@@ -84,6 +84,7 @@ export interface SignalCommentEvent {
   tag_nickname: string | null;
   is_edited?: boolean;
   admin_blocked?: boolean;
+  is_admin_author?: boolean;
 }
 
 export interface Comment {
@@ -92,6 +93,7 @@ export interface Comment {
   user_id: number;
   username: string;
   nickname: string;
+  is_admin_author: boolean;
   message: string;
   images: string[];
   replies: Reply[];
@@ -111,6 +113,7 @@ export type Reply = {
   main_comment_id: number;
   message: string;
   nickname: string;
+  is_admin_author: boolean;
   reply_to_id: number;
   reported_count: number;
   signal_talk_id: number;

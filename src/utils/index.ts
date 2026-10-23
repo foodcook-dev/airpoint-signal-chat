@@ -10,22 +10,22 @@ export const formatSignalDate = (date: string | number | Date): string =>
 export function formatCommentTime(isoString: string) {
   const diffSeconds = Math.floor((Date.now() - new Date(isoString).getTime()) / 1000);
 
-  if (diffSeconds < 60) return '방금 전';
+  if (diffSeconds < 60) return '· 방금 전';
 
   const diffMinutes = Math.floor(diffSeconds / 60);
-  if (diffMinutes < 60) return `${diffMinutes}분 전`;
+  if (diffMinutes < 60) return `· ${diffMinutes}분 전`;
 
   const diffHours = Math.floor(diffMinutes / 60);
-  if (diffHours < 24) return `${diffHours}시간 전`;
+  if (diffHours < 24) return `· ${diffHours}시간 전`;
 
   const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 7) return `${diffDays}일 전`;
+  if (diffDays < 7) return `· ${diffDays}일 전`;
 
   const date = new Date(isoString);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
-  return `${year}.${month}.${day}`;
+  return `· ${year}.${month}.${day}`;
 }
 
 export const formatFileSize = (bytes: number): string => {

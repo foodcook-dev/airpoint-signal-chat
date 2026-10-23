@@ -13,6 +13,14 @@ import { validateImageFile } from '@/utils';
 import type { ChatMessage, Comment, CommentResponse, Reply, SelectedImage } from '@/types/signal';
 import type ResponseError from '@/libs/response-error';
 
+// editingReplyId가 있으면 "답글 작성"이 아니라 "이 id의 대댓글을 수정" 모드
+export type ReplyTarget = {
+  commentId: number;
+  userId: number;
+  nickname: string;
+  editingReplyId?: number;
+} | null;
+
 export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage }) => {
   const { showAlert } = useAlertStore();
   const { showConfirm } = useConfirmStore();
@@ -35,12 +43,7 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
   // 대댓글 입력 (한 번에 하나의 댓글에만 대댓글을 달 수 있도록 단일 상태로 관리)
   // editingReplyId가 있으면 "답글 작성"이 아니라 "이 id의 대댓글을 수정" 모드 — @태그(nickname)는
   // 수정 중엔 바꿀 수 있는 UI를 아예 제공하지 않는다(항상 원래 태그를 그대로 들고 있음).
-  const [replyTarget, setReplyTarget] = useState<{
-    commentId: number;
-    userId: number;
-    nickname: string;
-    editingReplyId?: number;
-  } | null>(null);
+  const [replyTarget, setReplyTarget] = useState<ReplyTarget>(null);
   const [replyValue, setReplyValue] = useState('');
   const [replyImage, setReplyImage] = useState<SelectedImage | null>(null);
   const [replyImageTouched, setReplyImageTouched] = useState(false);

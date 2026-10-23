@@ -42,6 +42,7 @@ function toComment(event: SignalCommentEvent): Comment {
     is_edited: event.is_edited ?? false,
     deleted_at: false,
     created_at: event.created_at,
+    is_admin_author: event.is_admin_author ?? false,
   };
 }
 
@@ -62,6 +63,7 @@ function toReply(event: SignalCommentEvent): Reply {
     tag_nickname: event.tag_nickname ?? '',
     user_id: String(event.user_id),
     username: event.username,
+    is_admin_author: event.is_admin_author ?? false,
   };
 }
 

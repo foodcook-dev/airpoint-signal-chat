@@ -1,31 +1,14 @@
 import { useState } from 'react';
-import {
-  X,
-  MessageSquareOff,
-  UserX,
-  Trash2,
-  Send,
-  MessageSquare,
-  ImageIcon,
-  BookMarked,
-  ChevronDown,
-  ChevronUp,
-  Pencil,
-} from 'lucide-react';
-import { ReplyIcon } from '@/components/icons/reply-icon';
+import { X, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { formatSignalDate, formatCommentTime } from '@/utils';
-import { ADMIN_USER_ID } from '@/constants/signal';
-import likePng from '@/assets/images/signal_like.png';
-import goodPng from '@/assets/images/signal_good.png';
-import checkPng from '@/assets/images/signal_check.png';
-import logoPng from '@/assets/images/app_logo.png';
 import UserBlockDialog from '@/components/modules/dialog/user-block-dialog';
 import ImagePreviewDialog from '@/components/modules/dialog/image-preview-dialog';
 import { Spinner } from '@/components/ui/spinner';
 import type { ChatMessage } from '@/types/signal';
 import { useCommentHandler } from '@/hooks/useCommentHandler';
+import SignalPreviewBar from './signal-preview-bar';
+import CommentItem from './comment-item';
+import CommentComposer from './comment-composer';
 
 interface CommentSectionProps {
   selectedChat: ChatMessage;
@@ -41,10 +24,7 @@ export default function CommentSection({
   onPickInvestmentNote,
   canPickInvestmentNote = false,
 }: CommentSectionProps) {
-  const { message_with_html, message, content_images, created_at, reactions } = selectedChat;
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  // 선택된 시그널 미리보기는 기본 접힌 상태(인용 바) — 클릭하면 펼쳐서 전체 내용을 본다
-  const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
   const {
     isFetching,
     selectedUser,
@@ -104,115 +84,12 @@ export default function CommentSection({
         </Button>
       </div>
 
-      {/* 선택된 채팅 메시지 — 기본은 인용 바로 접혀있고 클릭하면 전체 내용이 펼쳐진다 */}
-      <div className="border-border/60 flex-shrink-0 border-b">
-        <div
-          role="button"
-          tabIndex={0}
-          onClick={() => setIsPreviewExpanded((prev) => !prev)}
-          onKeyDown={(e) => e.key === 'Enter' && setIsPreviewExpanded((prev) => !prev)}
-          className="hover:bg-foreground/40 flex cursor-pointer items-center gap-2.5 px-4 py-3 transition-colors"
-        >
-          <div className="bg-primary/50 h-7 w-1 flex-shrink-0 rounded-full" />
-          <div className="border-border flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border bg-white px-1">
-            <img src={logoPng} alt="logo" className="max-w-full" />
-          </div>
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            <span className="text-contrast/90 flex-shrink-0 text-xs font-semibold">에어포인트</span>
-            <span className="text-contrast/60 min-w-0 flex-1 truncate text-xs">
-              {message || '(이미지)'}
-            </span>
-          </div>
-          {canPickInvestmentNote && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-contrast/40 h-7 w-7 flex-shrink-0 hover:text-amber-500"
-              onClick={(e) => {
-                e.stopPropagation();
-                onPickInvestmentNote?.(selectedChat);
-              }}
-              title="투자노트로 지정"
-            >
-              <BookMarked className="size-4" />
-            </Button>
-          )}
-          <span className="text-contrast/50 flex-shrink-0 text-[10px]">
-            {formatSignalDate(created_at)}
-          </span>
-          <span className="text-primary flex flex-shrink-0 items-center gap-0.5 text-[10px] font-medium">
-            {isPreviewExpanded ? (
-              <>
-                접기
-                <ChevronUp className="size-3.5" />
-              </>
-            ) : (
-              <>
-                자세히
-                <ChevronDown className="size-3.5" />
-              </>
-            )}
-          </span>
-        </div>
-
-        {isPreviewExpanded && (
-          <div className="bg-foreground/70 flex max-h-[260px] flex-col gap-5 overflow-y-auto px-4 py-5">
-            {/* 채팅 메시지 */}
-            {message_with_html ? (
-              <div
-                className="text-contrast max-w-full text-xs leading-relaxed break-words whitespace-pre-wrap"
-                dangerouslySetInnerHTML={{ __html: message_with_html }}
-              />
-            ) : (
-              <span className="text-contrast text-xs break-words">{message}</span>
-            )}
-
-            {/* 첨부된 이미지 */}
-            {content_images.length > 0 && (
-              <div>
-                <span className="text-contrast/50 text-xs">
-                  첨부 이미지 {content_images.length}장
-                </span>
-                <div className="[&::-webkit-scrollbar-thumb]:bg-contrast/20 hover:[&::-webkit-scrollbar-thumb]:bg-contrast/40 flex gap-4 overflow-x-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
-                  {content_images.map((image) => (
-                    <div key={image} className="flex justify-center pb-2">
-                      <img
-                        src={image}
-                        className="max-h-40 max-w-40 cursor-pointer rounded-lg object-contain transition-opacity hover:opacity-80"
-                        onClick={() => setSelectedImage(image)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 리액션 */}
-            {reactions && (reactions.like > 0 || reactions.good > 0 || reactions.check > 0) && (
-              <div className="border-border/50 flex justify-end gap-1.5 border-t pt-3 text-xs select-none">
-                {reactions.like > 0 && (
-                  <div className="bg-background border-border/50 text-contrast/80 flex items-center gap-1 rounded-full border px-2 py-1 shadow-xs">
-                    <img src={likePng} alt="like" className="inline-block h-3.5" />
-                    <span>{reactions.like}</span>
-                  </div>
-                )}
-                {reactions.good > 0 && (
-                  <div className="bg-background border-border/50 text-contrast/80 flex items-center gap-1 rounded-full border px-2 py-1 shadow-xs">
-                    <img src={goodPng} alt="good" className="inline-block h-3.5" />
-                    <span>{reactions.good}</span>
-                  </div>
-                )}
-                {reactions.check > 0 && (
-                  <div className="bg-background border-border/50 text-contrast/80 flex items-center gap-1 rounded-full border px-2 py-1 shadow-xs">
-                    <img src={checkPng} alt="check" className="inline-block h-3.5" />
-                    <span>{reactions.check}</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      <SignalPreviewBar
+        selectedChat={selectedChat}
+        canPickInvestmentNote={canPickInvestmentNote}
+        onPickInvestmentNote={onPickInvestmentNote}
+        onImageClick={setSelectedImage}
+      />
 
       {/* 댓글 리스트 */}
       <div
@@ -226,349 +103,29 @@ export default function CommentSection({
         )}
         {commentList.length > 0 && (
           <>
-            {commentList.map((comment) => {
-              const {
-                id,
-                nickname,
-                message,
-                images,
-                replies,
-                is_edited,
-                reported_count,
-                deleted_at,
-                created_at,
-                user_id,
-              } = comment;
-              const isNew = false;
-
-              return (
-                <div
-                  key={id}
-                  className={`border-border/60 group border-b px-4 py-3 transition-colors ${
-                    isNew ? 'bg-[#FF7700]/5 hover:bg-[#FF7700]/15' : 'hover:bg-foreground/40'
-                  }`}
-                >
-                  {deleted_at && (
-                    <div className="text-contrast/50 mb-1 flex items-center gap-0.5">
-                      <Trash2 className="size-3" />
-                      <span className="text-[10px]">삭제된 댓글입니다.</span>
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <p
-                        className={`truncate text-xs font-medium ${
-                          deleted_at ? 'text-contrast/50' : 'text-contrast/90'
-                        }`}
-                      >
-                        {nickname}
-                      </p>
-                      {isNew && (
-                        <span className="rounded-full bg-[#FF7700] px-1.5 py-0.5 text-[9px] font-bold whitespace-nowrap text-white">
-                          NEW
-                        </span>
-                      )}
-                      <div className="text-contrast/60 flex gap-1 text-[10px] whitespace-nowrap">
-                        <p>{formatCommentTime(created_at)}</p>
-                        {is_edited && <p>(수정됨)</p>}
-                      </div>
-                      {reported_count > 0 && (
-                        <span
-                          className="rounded-full bg-red-500/15 px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap text-red-600"
-                          title={`누적 신고 ${reported_count}회`}
-                        >
-                          신고 {reported_count}회
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
-                      {/* 수정은 하드코딩된 관리자 본인(user_id: ADMIN_USER_ID) 댓글만 가능 — 본인 댓글은
-                          수정으로 충분하므로 차단/비활성화는 다른 사용자 댓글에만 노출 */}
-                      {user_id === ADMIN_USER_ID && !deleted_at && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-contrast/50 hover:bg-foreground/60 hover:text-primary h-6 w-6"
-                          onClick={() => handleStartEditComment(comment)}
-                          title="댓글 수정"
-                        >
-                          <Pencil className="size-3.5" />
-                        </Button>
-                      )}
-                      {user_id !== ADMIN_USER_ID && (
-                        <>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-contrast/50 hover:bg-foreground/60 h-6 w-6 hover:text-red-500"
-                            onClick={() => handleDisableComment(id, deleted_at)}
-                            title="댓글 비활성화"
-                          >
-                            <MessageSquareOff className="size-3.5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-contrast/50 hover:bg-foreground/60 h-6 w-6 hover:text-red-500"
-                            onClick={() => handleBlockUser(user_id, nickname)}
-                            title="사용자 댓글 작성 제한"
-                          >
-                            <UserX className="size-3.5" />
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <div
-                    className={`py-0.5 text-xs leading-relaxed break-words whitespace-pre-wrap ${
-                      deleted_at ? 'text-contrast/40' : 'text-contrast'
-                    }`}
-                  >
-                    {message}
-                  </div>
-                  {images.length > 0 && (
-                    <>
-                      <div className="mt-2">
-                        <span className="text-contrast/50 text-[10px]">
-                          첨부 이미지 {images.length}장
-                        </span>
-                      </div>
-                      <div className="[&::-webkit-scrollbar-thumb]:bg-contrast/20 hover:[&::-webkit-scrollbar-thumb]:bg-contrast/40 flex gap-4 overflow-x-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
-                        {images.map((image) => (
-                          <div key={image} className="flex justify-center pb-2">
-                            <img
-                              src={image}
-                              className="max-h-40 max-w-40 cursor-pointer rounded-lg object-contain transition-opacity hover:opacity-80"
-                              onClick={() => setSelectedImage(image)}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-
-                  {/* 대댓글 스레드 — 세로 연결선 하나로 같은 스레드임을 표현 (디스코드/슬랙 스타일) */}
-                  {(replies.length > 0 || replyTarget?.commentId === id) && (
-                    <div className="border-border/60 mt-3 flex flex-col gap-4 border-l-2 pl-4">
-                      {replies.map((reply) => (
-                        <div key={reply.id} className="group/reply flex flex-col gap-0.5">
-                          {reply.deleted_at && (
-                            <div className="text-contrast/50 flex items-center gap-0.5">
-                              <Trash2 className="size-3" />
-                              <span className="text-[10px]">삭제된 댓글입니다.</span>
-                            </div>
-                          )}
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex min-w-0 items-center gap-1.5">
-                              <p
-                                className={`truncate text-[11px] font-medium ${
-                                  reply.deleted_at ? 'text-contrast/50' : 'text-contrast/80'
-                                }`}
-                              >
-                                {reply.nickname}
-                              </p>
-                              <div className="text-contrast/50 flex gap-1 text-[10px] whitespace-nowrap">
-                                <p>{formatCommentTime(reply.created_at)}</p>
-                                {reply.is_edited && <p>(수정됨)</p>}
-                              </div>
-                              {reply.reported_count > 0 && (
-                                <span
-                                  className="rounded-full bg-red-500/15 px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap text-red-600"
-                                  title={`누적 신고 ${reply.reported_count}회`}
-                                >
-                                  신고 {reply.reported_count}회
-                                </span>
-                              )}
-                            </div>
-
-                            <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover/reply:opacity-100 focus-within:opacity-100">
-                              {/* 수정은 하드코딩된 관리자 본인(user_id: ADMIN_USER_ID) 대댓글만 가능 — 본인
-                                  대댓글은 수정으로 충분하므로 차단/비활성화는 다른 사용자 대댓글에만 노출 */}
-                              {Number(reply.user_id) === ADMIN_USER_ID && !reply.deleted_at && (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="text-contrast/50 hover:bg-button-background hover:text-primary h-5 w-5"
-                                  onClick={() => handleStartEditReply(reply)}
-                                  title="댓글 수정"
-                                >
-                                  <Pencil className="size-3" />
-                                </Button>
-                              )}
-                              {Number(reply.user_id) !== ADMIN_USER_ID && (
-                                <>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="text-contrast/50 hover:bg-button-background h-5 w-5 hover:text-red-500"
-                                    onClick={() => handleDisableComment(reply.id, reply.deleted_at)}
-                                    title="댓글 비활성화"
-                                  >
-                                    <MessageSquareOff className="size-3" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="text-contrast/50 hover:bg-button-background h-5 w-5 hover:text-red-500"
-                                    onClick={() =>
-                                      handleBlockUser(Number(reply.user_id), reply.nickname)
-                                    }
-                                    title="사용자 댓글 작성 제한"
-                                  >
-                                    <UserX className="size-3" />
-                                  </Button>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                          <div
-                            className={`text-[11px] leading-relaxed break-words whitespace-pre-wrap ${
-                              reply.deleted_at ? 'text-contrast/40' : 'text-contrast/90'
-                            }`}
-                          >
-                            {reply.tag_nickname && (
-                              <span className="text-primary font-medium">
-                                @{reply.tag_nickname}{' '}
-                              </span>
-                            )}
-                            {reply.message}
-                          </div>
-                          {reply.images.length > 0 && (
-                            <div className="[&::-webkit-scrollbar-thumb]:bg-contrast/20 hover:[&::-webkit-scrollbar-thumb]:bg-contrast/40 mt-1 flex gap-3 overflow-x-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
-                              {reply.images.map((image) => (
-                                <div key={image} className="flex justify-center pb-2">
-                                  <img
-                                    src={image}
-                                    className="max-h-32 max-w-32 cursor-pointer rounded-lg object-contain transition-opacity hover:opacity-80"
-                                    onClick={() => setSelectedImage(image)}
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          {/* 이 스레드에 입력창이 이미 열려 있으면 숨김 — 입력창 자체의 취소로 충분해서 중복 노출 방지 */}
-                          {!reply.deleted_at && replyTarget?.commentId !== id && (
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleOpenReply(id, Number(reply.user_id), reply.nickname)
-                              }
-                              className="text-contrast/45 hover:text-primary mt-0.5 flex w-fit items-center gap-1 text-[10px] font-medium transition-colors"
-                            >
-                              <ReplyIcon className="size-3.5" />
-                              댓글 달기
-                            </button>
-                          )}
-                        </div>
-                      ))}
-
-                      {/* 대댓글 입력창 — 같은 세로선 안에서 이어지도록 */}
-                      {replyTarget?.commentId === id && (
-                        <div className="flex flex-col gap-2">
-                          <div className="flex items-center justify-between gap-2">
-                            {/* 수정 중엔 @태그를 바꿀 수 있는 UI를 아예 제공하지 않는다 — 항상 원래 태그 그대로 */}
-                            <span className="bg-primary/10 text-primary inline-flex w-fit items-center gap-1 rounded-full py-0.5 pr-1 pl-2 text-[11px] font-medium">
-                              @{replyTarget.nickname}
-                              <button
-                                type="button"
-                                onClick={handleCancelReply}
-                                className="hover:bg-primary/20 rounded-full p-0.5"
-                                title="댓글 취소"
-                              >
-                                <X className="size-3" />
-                              </button>
-                            </span>
-                            {replyTarget.editingReplyId != null && (
-                              <span className="text-contrast/50 text-[11px] font-medium">
-                                댓글 수정 중
-                              </span>
-                            )}
-                          </div>
-                          <Textarea
-                            autoFocus
-                            value={replyValue}
-                            onChange={(e) => setReplyValue(e.target.value)}
-                            placeholder="댓글을 작성하세요"
-                            className="bg-foreground/40 border-border/60 min-h-14 resize-none text-xs shadow-none md:text-xs"
-                          />
-                          {replyImage && (
-                            <div className="relative w-fit">
-                              <img
-                                src={replyImage.url}
-                                alt={replyImage.name}
-                                className="h-16 w-16 rounded-lg object-cover"
-                              />
-                              <button
-                                type="button"
-                                onClick={handleReplyImageRemove}
-                                className="bg-background border-border/60 text-contrast/60 absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full border hover:text-red-500"
-                                title="이미지 제거"
-                              >
-                                <X className="size-2.5" />
-                              </button>
-                            </div>
-                          )}
-                          <div className="flex items-center justify-between gap-1.5">
-                            <div>
-                              <input
-                                ref={replyFileInputRef}
-                                type="file"
-                                accept="image/*"
-                                onChange={handleReplyImageSelect}
-                                className="hidden"
-                              />
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="text-contrast/50 hover:bg-button-background h-7 w-7"
-                                onClick={handleReplyImageButtonClick}
-                                disabled={!!replyImage}
-                                title="이미지 첨부 (최대 1장)"
-                              >
-                                <ImageIcon className="size-3.5" />
-                              </Button>
-                            </div>
-                            <div className="flex gap-1.5">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-contrast/60 h-7 px-2.5 text-[11px]"
-                                onClick={handleCancelReply}
-                              >
-                                취소
-                              </Button>
-                              <Button
-                                size="sm"
-                                className="h-7 gap-1 px-2.5 text-[11px]"
-                                disabled={(!replyValue.trim() && !replyImage) || isSubmittingReply}
-                                onClick={handleSubmitReply}
-                              >
-                                <Send className="size-3" />
-                                {replyTarget.editingReplyId != null ? '수정하기' : '댓글 등록'}
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* 댓글 달기 — 이 스레드에 입력창이 이미 열려 있으면 숨김 */}
-                  {!deleted_at && replyTarget?.commentId !== id && (
-                    <button
-                      type="button"
-                      onClick={() => handleOpenReply(id, user_id, nickname)}
-                      className="text-contrast/50 hover:text-primary mt-3 flex items-center gap-1 text-[11px] font-medium transition-colors"
-                    >
-                      <ReplyIcon className="size-4" />
-                      댓글 달기
-                    </button>
-                  )}
-                </div>
-              );
-            })}
+            {commentList.map((comment) => (
+              <CommentItem
+                key={comment.id}
+                comment={comment}
+                replyTarget={replyTarget}
+                replyValue={replyValue}
+                onChangeReplyValue={setReplyValue}
+                replyImage={replyImage}
+                replyFileInputRef={replyFileInputRef}
+                onReplyImageSelect={handleReplyImageSelect}
+                onReplyImageRemove={handleReplyImageRemove}
+                onReplyImageButtonClick={handleReplyImageButtonClick}
+                onOpenReply={handleOpenReply}
+                onCancelReply={handleCancelReply}
+                onSubmitReply={handleSubmitReply}
+                isSubmittingReply={isSubmittingReply}
+                onDisableComment={handleDisableComment}
+                onBlockUser={handleBlockUser}
+                onStartEditComment={handleStartEditComment}
+                onStartEditReply={handleStartEditReply}
+                onImageClick={setSelectedImage}
+              />
+            ))}
             <div ref={commentObserverRef} className="h-4" />
           </>
         )}
@@ -580,74 +137,19 @@ export default function CommentSection({
         )}
       </div>
 
-      {/* 관리자 댓글 작성 */}
-      <div className="border-border bg-background flex-shrink-0 border-t p-3">
-        {editingCommentId != null && (
-          <div className="bg-primary/10 text-primary mb-2 flex items-center justify-between rounded-md px-2.5 py-1.5 text-xs font-medium">
-            <span>댓글 수정 중</span>
-            <button type="button" onClick={handleCancelCommentEdit} className="hover:underline">
-              취소
-            </button>
-          </div>
-        )}
-        <div className="border-border focus-within:border-primary/60 focus-within:ring-primary/20 flex flex-col gap-2 rounded-xl border p-1.5 pl-2.5 shadow-xs transition-colors focus-within:ring-2">
-          {commentImage && (
-            <div className="relative w-fit">
-              <img
-                src={commentImage.url}
-                alt={commentImage.name}
-                className="h-16 w-16 rounded-lg object-cover"
-              />
-              <button
-                type="button"
-                onClick={handleCommentImageRemove}
-                className="bg-background border-border/60 text-contrast/60 absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full border hover:text-red-500"
-                title="이미지 제거"
-              >
-                <X className="size-2.5" />
-              </button>
-            </div>
-          )}
-          <div className="flex items-center gap-2">
-            <div className="border-border/60 flex h-6 w-6 flex-shrink-0 items-center justify-center self-center rounded-full border bg-white px-1">
-              <img src={logoPng} alt="logo" className="max-w-full" />
-            </div>
-            <Textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="댓글을 작성하세요"
-              className="max-h-24 min-h-9 flex-1 resize-none border-0 bg-transparent py-1.5 text-xs shadow-none focus-visible:ring-0 md:text-xs"
-            />
-            <input
-              ref={commentFileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleCommentImageSelect}
-              className="hidden"
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="text-contrast/50 hover:bg-foreground/60 h-8 w-8 flex-shrink-0"
-              onClick={handleCommentImageButtonClick}
-              disabled={!!commentImage}
-              title="이미지 첨부 (최대 1장)"
-            >
-              <ImageIcon className="size-4" />
-            </Button>
-            <Button
-              size="icon"
-              className="h-8 w-8 flex-shrink-0 rounded-lg"
-              disabled={(!newComment.trim() && !commentImage) || isSubmittingComment}
-              onClick={handleSubmitComment}
-              title={editingCommentId != null ? '댓글 수정' : '댓글 등록'}
-            >
-              <Send className="size-3.5" />
-            </Button>
-          </div>
-        </div>
-      </div>
+      <CommentComposer
+        editingCommentId={editingCommentId}
+        onCancelEdit={handleCancelCommentEdit}
+        commentImage={commentImage}
+        onImageRemove={handleCommentImageRemove}
+        newComment={newComment}
+        onChangeComment={setNewComment}
+        commentFileInputRef={commentFileInputRef}
+        onImageSelect={handleCommentImageSelect}
+        onImageButtonClick={handleCommentImageButtonClick}
+        onSubmit={handleSubmitComment}
+        isSubmitting={isSubmittingComment}
+      />
 
       {selectedUser && (
         <UserBlockDialog
