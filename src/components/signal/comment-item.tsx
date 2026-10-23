@@ -24,6 +24,7 @@ interface CommentItemProps {
   onSubmitReply: () => void;
   isSubmittingReply: boolean;
   onDisableComment: (id: number, isDeleted: boolean) => void;
+  onDeleteComment: (id: number) => void;
   onBlockUser: (userId: number, nickname: string) => void;
   onStartEditComment: (comment: Comment) => void;
   onStartEditReply: (reply: Reply) => void;
@@ -47,6 +48,7 @@ export default function CommentItem({
   onSubmitReply,
   isSubmittingReply,
   onDisableComment,
+  onDeleteComment,
   onBlockUser,
   onStartEditComment,
   onStartEditReply,
@@ -105,18 +107,27 @@ export default function CommentItem({
         </div>
 
         <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
-          {/* 수정은 하드코딩된 관리자 본인(user_id: ADMIN_USER_ID) 댓글만 가능 — 본인 댓글은
-              수정으로 충분하므로 차단/비활성화는 다른 사용자 댓글에만 노출 */}
           {isAdminOwned && !deleted_at && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-contrast/50 hover:bg-foreground/60 hover:text-primary h-6 w-6"
-              onClick={() => onStartEditComment(comment)}
-              title="댓글 수정"
-            >
-              <Pencil className="size-3.5" />
-            </Button>
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-contrast/50 hover:bg-foreground/60 hover:text-primary h-6 w-6"
+                onClick={() => onStartEditComment(comment)}
+                title="댓글 수정"
+              >
+                <Pencil className="size-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-contrast/50 hover:bg-foreground/60 h-6 w-6 hover:text-red-500"
+                onClick={() => onDeleteComment(id)}
+                title="댓글 삭제"
+              >
+                <Trash2 className="size-3.5" />
+              </Button>
+            </>
           )}
           {!isAdminOwned && (
             <>
@@ -179,6 +190,7 @@ export default function CommentItem({
               isReplyComposerOpenForThread={isReplyComposerOpenForThread}
               onStartEditReply={onStartEditReply}
               onDisableComment={onDisableComment}
+              onDeleteComment={onDeleteComment}
               onBlockUser={onBlockUser}
               onOpenReply={onOpenReply}
               onImageClick={onImageClick}

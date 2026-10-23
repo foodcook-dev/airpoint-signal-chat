@@ -118,6 +118,21 @@ export async function patchComment({
   return data;
 }
 
+// 댓글 삭제
+export async function deleteComment({
+  signalTalkId,
+  commentId,
+}: {
+  signalTalkId: number;
+  commentId: number;
+}): Promise<void> {
+  const { data } = await API.post(`/v2/signal_talks/comments/admin/delete-self/`, {
+    signal_talk_id: signalTalkId,
+    comment_id: commentId,
+  });
+  return data;
+}
+
 // 댓글 비활성화 POST
 export async function postDeactivateComment(commentId: number): Promise<unknown> {
   const { data } = await API.post(`/talk/signal_talks/comments/${commentId}/deactivate/`);

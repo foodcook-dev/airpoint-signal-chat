@@ -12,6 +12,7 @@ interface ReplyItemProps {
   isReplyComposerOpenForThread: boolean;
   onStartEditReply: (reply: Reply) => void;
   onDisableComment: (id: number, isDeleted: boolean) => void;
+  onDeleteComment: (id: number) => void;
   onBlockUser: (userId: number, nickname: string) => void;
   onOpenReply: (commentId: number, userId: number, nickname: string) => void;
   onImageClick: (url: string) => void;
@@ -24,6 +25,7 @@ export default function ReplyItem({
   isReplyComposerOpenForThread,
   onStartEditReply,
   onDisableComment,
+  onDeleteComment,
   onBlockUser,
   onOpenReply,
   onImageClick,
@@ -67,18 +69,27 @@ export default function ReplyItem({
         </div>
 
         <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover/reply:opacity-100 focus-within:opacity-100">
-          {/* 수정은 하드코딩된 관리자 본인(user_id: ADMIN_USER_ID) 대댓글만 가능 — 본인
-              대댓글은 수정으로 충분하므로 차단/비활성화는 다른 사용자 대댓글에만 노출 */}
           {isAdminOwned && !reply.deleted_at && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-contrast/50 hover:bg-button-background hover:text-primary h-5 w-5"
-              onClick={() => onStartEditReply(reply)}
-              title="댓글 수정"
-            >
-              <Pencil className="size-3" />
-            </Button>
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-contrast/50 hover:bg-button-background hover:text-primary h-5 w-5"
+                onClick={() => onStartEditReply(reply)}
+                title="댓글 수정"
+              >
+                <Pencil className="size-3" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-contrast/50 hover:bg-button-background h-5 w-5 hover:text-red-500"
+                onClick={() => onDeleteComment(reply.id)}
+                title="댓글 삭제"
+              >
+                <Trash2 className="size-3" />
+              </Button>
+            </>
           )}
           {!isAdminOwned && (
             <>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, MessageSquare } from 'lucide-react';
+import { X, MessageSquare, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UserBlockDialog from '@/components/modules/dialog/user-block-dialog';
 import ImagePreviewDialog from '@/components/modules/dialog/image-preview-dialog';
@@ -34,7 +34,9 @@ export default function CommentSection({
     scrollContainerRef,
     blockDialogOpen,
     setBlockDialogOpen,
+    handleRefetchComments,
     handleDisableComment,
+    handleDeleteComment,
     handleBlockUser,
     handleConfirmBlock,
     newComment,
@@ -78,14 +80,28 @@ export default function CommentSection({
           </span>
           {!isPoll && <span className="text-contrast/50 text-xs">{commentCount}개</span>}
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-contrast hover:bg-foreground/60 h-7 w-7"
-          onClick={onClose}
-        >
-          <X className="size-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          {!isPoll && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-contrast hover:bg-foreground/60 h-7 w-7"
+              onClick={() => handleRefetchComments()}
+              disabled={isFetching}
+              title="댓글 새로고침"
+            >
+              <RefreshCw className={`size-4 ${isFetching ? 'animate-spin' : ''}`} />
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-contrast hover:bg-foreground/60 h-7 w-7"
+            onClick={onClose}
+          >
+            <X className="size-4" />
+          </Button>
+        </div>
       </div>
 
       <SignalPreviewBar
@@ -126,6 +142,7 @@ export default function CommentSection({
                     onSubmitReply={handleSubmitReply}
                     isSubmittingReply={isSubmittingReply}
                     onDisableComment={handleDisableComment}
+                    onDeleteComment={handleDeleteComment}
                     onBlockUser={handleBlockUser}
                     onStartEditComment={handleStartEditComment}
                     onStartEditReply={handleStartEditReply}

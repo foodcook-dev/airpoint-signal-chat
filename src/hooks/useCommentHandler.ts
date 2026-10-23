@@ -4,6 +4,7 @@ import {
   getCommentsAdmin,
   postComment,
   patchComment,
+  deleteComment,
   postDeactivateComment,
   postCommentBanUser,
 } from '@/api/signal';
@@ -129,7 +130,7 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
     mutationFn: (commentId: number) => postDeactivateComment(commentId),
     onSuccess: () => {
       showAlert('댓글이 비활성화되었습니다.');
-      handleRefetchComments();
+      commentResponse.refetch();
     },
     onError: handleMutationError,
   });
@@ -144,6 +145,29 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
       message: '이 댓글을 비활성화하시겠습니까?',
       onConfirm: async () => {
         await disableCommentRequest(commentId);
+      },
+    });
+  };
+
+  // 관리자 본인 댓글/대댓글 삭제 — 수정 가능한(user_id: ADMIN_USER_ID) 댓글에만 노출되는 액션.
+  // isManualRefetching을 거치지 않고 조용히 백그라운드 refetch만 해서, 실제 서버 상태(소프트
+  // 삭제 여부 등)를 정확히 반영하면서도 전체 로딩 스피너는 띄우지 않는다.
+  const { mutateAsync: deleteCommentRequest } = useMutation({
+    mutationFn: (commentId: number) =>
+      deleteComment({ signalTalkId: Number(selectedChat.id), commentId }),
+    onSuccess: () => {
+      showAlert('댓글이 삭제되었습니다.');
+      commentResponse.refetch();
+    },
+    onError: handleMutationError,
+  });
+
+  const handleDeleteComment = (commentId: number) => {
+    showConfirm({
+      title: '댓글 삭제',
+      message: '이 댓글을 삭제하시겠습니까? 삭제된 댓글은 복구할 수 없습니다.',
+      onConfirm: async () => {
+        await deleteCommentRequest(commentId);
       },
     });
   };
@@ -399,7 +423,9 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
     scrollContainerRef,
     blockDialogOpen,
     setBlockDialogOpen,
+    handleRefetchComments,
     handleDisableComment,
+    handleDeleteComment,
     handleBlockUser,
     handleConfirmBlock,
 
