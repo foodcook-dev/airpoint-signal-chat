@@ -99,6 +99,8 @@ export const useSignalHandler = (channel: SignalChannel) => {
 
     if (trimmedInput) formData.append('message', trimmedInput);
 
+    formData.append('audience', audience);
+
     // 자동 리액션 설정 항상 전송
     formData.append('enable_auto_reactions', isAutoReactionEnabled.toString());
     formData.append(
