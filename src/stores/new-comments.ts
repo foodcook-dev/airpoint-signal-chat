@@ -1,22 +1,20 @@
 import { create } from 'zustand';
 
-// 소켓으로 들어온 신규 댓글/대댓글 id, 그리고 신규 댓글이 달린 시그널 id를 들고 있는
-// 클라이언트 전용 스토어. React Query 캐시(쿼리별 데이터)와 분리해 둔 이유 — 댓글/시그널
-// 목록은 관리자의 다른 조작(댓글 작성 후 refetch)이나 onAny의 전체 invalidate(`['signal']`
-// 쿼리 포함) 때문에 수시로 새 데이터로 통째로 교체되는데, 그때마다 캐시에 박아둔 플래그가
-// 같이 지워지면 안 되기 때문이다.
 interface NewCommentsState {
   newIdsBySignal: Record<string, Set<number>>;
   newSignalIds: Set<string>;
+  locallyReadAtBySignal: Record<string, number>;
   markNew: (signalTalkId: number | string, id: number) => void;
   clearSignal: (signalTalkId: number | string) => void;
   markSignalNew: (signalTalkId: number | string) => void;
   clearSignalNew: (signalTalkId: number | string) => void;
+  markLocallyReadNow: (signalTalkId: number | string) => void;
 }
 
 const useNewCommentsStore = create<NewCommentsState>((set) => ({
   newIdsBySignal: {},
   newSignalIds: new Set(),
+  locallyReadAtBySignal: {},
   // 댓글/대댓글 개별 NEW — 패널을 닫거나(혹은 다른 시그널로 전환) clearSignal로 그 시그널 몫만 지운다
   markNew: (signalTalkId, id) =>
     set((state) => {
@@ -52,6 +50,10 @@ const useNewCommentsStore = create<NewCommentsState>((set) => ({
       next.delete(key);
       return { newSignalIds: next };
     }),
+  markLocallyReadNow: (signalTalkId) =>
+    set((state) => ({
+      locallyReadAtBySignal: { ...state.locallyReadAtBySignal, [String(signalTalkId)]: Date.now() },
+    })),
 }));
 
 export default useNewCommentsStore;

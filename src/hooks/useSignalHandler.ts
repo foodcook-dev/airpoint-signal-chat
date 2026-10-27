@@ -5,6 +5,7 @@ import {
   postSignalTalk,
   deleteSignalTalk,
   postInvestmentNote,
+  postReadComments,
 } from '@/api/signal';
 import { useSocket } from '@/libs/socket-provider';
 import { PATH } from '@/constants/api-path';
@@ -221,6 +222,48 @@ export const useSignalHandler = (channel: SignalChannel) => {
     }
   }, [signalResponse]);
 
+  // "새 댓글" 목록에서 댓글/대댓글 클릭 시 해당 시그널 상세패널로 진입하기 위한 핸들러.
+  // 클릭된 시그널이 이미 로드된 페이지에 없으면(오래된 시그널), 과거 페이지를 계속 불러오며 찾는다.
+  const [isOpeningSignalThread, setIsOpeningSignalThread] = useState(false);
+
+  const handleOpenSignalThread = async (signalTalkId: number) => {
+    // ChatMessage.id는 타입상 string이지만 실제 API 응답은 숫자로 내려온다 — 엄격 비교(===) 대신
+    // 양쪽을 문자열로 맞춰서 비교해야 한다
+    const findInPages = (pages: ChatResponse[] | undefined) =>
+      pages
+        ?.flatMap((page) => page.results)
+        .find((msg) => String(msg.id) === String(signalTalkId)) ?? null;
+
+    const alreadyLoaded = findInPages(signalResponse.data?.pages);
+    if (alreadyLoaded) {
+      setSelectedChat(alreadyLoaded);
+      return;
+    }
+
+    setIsOpeningSignalThread(true);
+    try {
+      let found: ChatMessage | null = null;
+      let currentHasNextPage = signalResponse.hasNextPage;
+      let pageCount = signalResponse.data?.pages.length ?? 0;
+
+      // 과거 페이지를 끝까지(또는 최대 30페이지까지) 불러오며 찾는다
+      while (currentHasNextPage && !found && pageCount < 30) {
+        const result = await signalResponse.fetchNextPage();
+        found = findInPages(result.data?.pages);
+        currentHasNextPage = result.hasNextPage;
+        pageCount = result.data?.pages.length ?? pageCount;
+      }
+
+      if (found) {
+        setSelectedChat(found);
+      } else {
+        showAlert('해당 시그널을 찾을 수 없습니다.');
+      }
+    } finally {
+      setIsOpeningSignalThread(false);
+    }
+  };
+
   // 투자노트 지정 모달에 띄울 대상 시그널 — null이면 모달이 닫힌 상태
   const [investmentNoteTarget, setInvestmentNoteTarget] = useState<ChatMessage | null>(null);
 
@@ -257,6 +300,20 @@ export const useSignalHandler = (channel: SignalChannel) => {
   const messageList = signalResponse.data?.pages.flatMap((page) => page.results) || [];
   const selectedChat = messageList.find((msg) => msg.id === selectedChatId) || null;
 
+  // 최초 진입이나 새로고침 직후엔 아직 소켓 이벤트가 쌓이지 않았으므로, 목록 API가 내려주는
+  // has_new로 NEW 뱃지 상태를 동기화한다. signalResponse.data가 바뀔 때마다(최초 로드, 과거
+  // 페이지 추가 로드, 소켓발 invalidate로 인한 refetch 등) 다시 동기화된다 — 이미 markSignalNew로
+  // 켜져 있으면 no-op이라 소켓으로 먼저 켜진 상태를 덮어쓰지 않는다.
+  useEffect(() => {
+    signalResponse.data?.pages.forEach((page) => {
+      page.results.forEach((msg) => {
+        if (msg.has_new) {
+          useNewCommentsStore.getState().markSignalNew(msg.id);
+        }
+      });
+    });
+  }, [signalResponse.data]);
+
   // 상세방을 나올 때(다른 시그널로 바꾸거나 패널을 닫을 때)만 그 시그널의 NEW 표시를 지운다 —
   // 패널을 열어두고 보는 동안에는 계속 떠 있어야 한다. useEffect cleanup으로 하면 StrictMode의
   // 개발 모드 mount→cleanup→mount 시뮬레이션 때문에 패널을 여는 순간 지워져버려서, 실제 "닫기"
@@ -267,6 +324,20 @@ export const useSignalHandler = (channel: SignalChannel) => {
       if (prevId && prevId !== nextId) {
         useNewCommentsStore.getState().clearSignalNew(prevId);
         useNewCommentsStore.getState().clearSignal(prevId);
+        // postReadComments는 await 없이 fire-and-forget이라, 서버 last_checked_at이 갱신되기
+        // 전에 같은 시그널을 바로 재진입하면 NEW가 레이스로 다시 붙을 수 있다 — 그래서 "방금
+        // 여기까지는 확인했다"는 로컬 타임스탬프를 같이 남겨서 useCommentHandler가 서버값과
+        // 비교할 때 이 값도 함께 고려하게 한다.
+        useNewCommentsStore.getState().markLocallyReadNow(prevId);
+        // 읽음 처리가 서버에 실제로 반영된 뒤에 헤더의 "새 댓글" 목록/카운트를 다시 불러온다 —
+        // 응답을 기다리지 않고 바로 invalidate하면 아직 감소 전인 카운트를 다시 받아올 수 있다.
+        postReadComments({ signalTalkId: Number(prevId) })
+          .then(() => {
+            queryClient.invalidateQueries({ queryKey: ['unread-comments'] });
+          })
+          .catch((error) => {
+            console.error('댓글 읽음 처리 실패:', error);
+          });
       }
       return nextId;
     });
@@ -298,6 +369,10 @@ export const useSignalHandler = (channel: SignalChannel) => {
     loadMoreMessages,
     hasNextPage: signalResponse.hasNextPage,
     isFetchingNextPage: signalResponse.isFetchingNextPage,
+
+    // "새 댓글" 목록에서 시그널 상세패널로 진입
+    handleOpenSignalThread,
+    isOpeningSignalThread,
 
     // 투자노트 지정 모달
     investmentNoteTarget,

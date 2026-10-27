@@ -40,6 +40,10 @@ export default function SignalChat({ channel }: { channel: SignalChannel }) {
     handlePickInvestmentNote,
     handleCloseInvestmentNoteModal,
     handleConfirmInvestmentNote,
+
+    // "새 댓글" 목록에서 시그널 상세패널로 진입
+    handleOpenSignalThread,
+    isOpeningSignalThread,
   } = useSignalHandler(channel);
 
   const handleOpenThread = (message: ChatMessage) => setSelectedChat(message);
@@ -55,7 +59,11 @@ export default function SignalChat({ channel }: { channel: SignalChannel }) {
           selectedChat ? 'w-[calc(100vw-560px)]' : 'w-[100vw]'
         }`}
       >
-        <Header channel={channel} />
+        <Header
+          channel={channel}
+          onOpenSignalThread={handleOpenSignalThread}
+          isOpeningSignalThread={isOpeningSignalThread}
+        />
 
         <ChatMessageList
           onLoadMore={loadMoreMessages}

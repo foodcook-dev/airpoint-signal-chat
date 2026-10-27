@@ -4,6 +4,7 @@ import type {
   ChatMessage,
   ChatResponse,
   CommentResponse,
+  UnreadCommentResponse,
   InvestmentNotePostResult,
   SelectedImage,
   SignalPollDetail,
@@ -48,10 +49,9 @@ export async function getCommentsAdmin({
   page: number;
   pageSize?: number;
 }): Promise<CommentResponse> {
-  const { data } = await API.get<CommentResponse>(
-    `/talk/signal_talks/${signalTalkId}/comments/admin/`,
-    { params: { page, page_size: pageSize, sort: 'asc' } },
-  );
+  const { data } = await API.get(`/talk/signal_talks/${signalTalkId}/comments/admin/`, {
+    params: { page, page_size: pageSize, sort: 'asc' },
+  });
   return data;
 }
 
@@ -151,7 +151,7 @@ export async function postCommentBanUser({
   reason: string;
   blockedUntil: string;
   memo: string;
-}): Promise<unknown> {
+}): Promise<void> {
   const { data } = await API.post('/user/comment-ban-admin/', {
     user_id: userId,
     reason,
@@ -190,5 +190,27 @@ export async function getSignalPollDetail({
   pollId: string | number;
 }): Promise<SignalPollDetail> {
   const { data } = await API.get<SignalPollDetail>(`/v2/signal_talk_polls/${pollId}/admin/`);
+  return data;
+}
+
+export async function getUnreadComments({
+  audience,
+  page,
+  pageSize = 20,
+}: {
+  audience: 'paid' | 'free';
+  page: number;
+  pageSize?: number;
+}): Promise<UnreadCommentResponse> {
+  const { data } = await API.get(`/v2/signal_talks/unread-comments/admin/`, {
+    params: { audience, page, page_size: pageSize },
+  });
+  return data;
+}
+
+export async function postReadComments({ signalTalkId }: { signalTalkId: number }): Promise<void> {
+  const { data } = await API.post('/v2/signal_talks/comments/admin/read/', {
+    signal_talk_id: signalTalkId,
+  });
   return data;
 }

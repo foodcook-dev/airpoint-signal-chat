@@ -12,6 +12,7 @@ import type { Reply } from '@/types/signal';
 interface ReplyItemProps {
   reply: Reply;
   commentId: number;
+  isMainCommentDeleted: boolean;
   isReplyComposerOpenForThread: boolean;
   onStartEditReply: (reply: Reply) => void;
   onDisableComment: (id: number, isDeleted: boolean) => void;
@@ -25,6 +26,7 @@ interface ReplyItemProps {
 export default function ReplyItem({
   reply,
   commentId,
+  isMainCommentDeleted,
   isReplyComposerOpenForThread,
   onStartEditReply,
   onDisableComment,
@@ -150,8 +152,9 @@ export default function ReplyItem({
           ))}
         </div>
       )}
-      {/* 이 스레드에 입력창이 이미 열려 있으면 숨김 — 입력창 자체의 취소로 충분해서 중복 노출 방지 */}
-      {!reply.deleted_at && !isReplyComposerOpenForThread && (
+      {/* 원댓글이 삭제됐으면(스레드 자체가 사라진 상태) 대댓글 달기도 막는다.
+          이 스레드에 입력창이 이미 열려 있으면 숨김 — 입력창 자체의 취소로 충분해서 중복 노출 방지 */}
+      {!reply.deleted_at && !isMainCommentDeleted && !isReplyComposerOpenForThread && (
         <button
           type="button"
           onClick={() => onOpenReply(commentId, Number(reply.user_id), reply.nickname)}

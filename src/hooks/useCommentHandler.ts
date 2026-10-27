@@ -10,6 +10,7 @@ import {
 } from '@/api/signal';
 import useAlertStore from '@/stores/alert';
 import useConfirmStore from '@/stores/confirm';
+import useNewCommentsStore from '@/stores/new-comments';
 import { validateImageFile } from '@/utils';
 import type { ChatMessage, Comment, CommentResponse, Reply, SelectedImage } from '@/types/signal';
 import type ResponseError from '@/libs/response-error';
@@ -414,6 +415,35 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
     }
   }, [commentResponse.isLoading, isManualRefetching]);
 
+  // 소켓 이벤트가 쌓이기 전(패널 최초 진입/새로고침)에는 댓글 목록 API가 내려주는
+  // last_checked_at(마지막으로 이 시그널의 댓글을 확인한 시점)보다 나중에 작성된 댓글/대댓글에
+  // NEW를 붙인다. markNew는 이미 켜져 있으면 no-op이라 소켓으로 먼저 켜진 상태를 덮어쓰지 않는다.
+  //
+  // postReadComments(읽음 처리)는 await 없이 fire-and-forget으로 보내므로, 패널을 닫았다가
+  // 서버 반영 전에 바로 재진입하면 서버의 last_checked_at이 아직 갱신 전이라 방금 읽은 댓글에
+  // NEW가 레이스로 다시 붙을 수 있다 — 그래서 서버값과, 패널을 나갈 때 남겨둔 로컬 타임스탬프
+  // (markLocallyReadNow) 중 더 최신인 쪽을 기준으로 판단한다.
+  useEffect(() => {
+    if (!selectedChat?.id) return;
+    const locallyReadAt =
+      useNewCommentsStore.getState().locallyReadAtBySignal[String(selectedChat.id)];
+
+    commentResponse.data?.pages.forEach((page) => {
+      const lastCheckedAtMs = page.last_checked_at ? new Date(page.last_checked_at).getTime() : 0;
+      const effectiveCheckedAtMs = Math.max(lastCheckedAtMs, locallyReadAt ?? 0);
+      page.results.forEach((comment) => {
+        if (new Date(comment.created_at).getTime() > effectiveCheckedAtMs) {
+          useNewCommentsStore.getState().markNew(comment.signal_talk_id, comment.id);
+        }
+        comment.replies.forEach((reply) => {
+          if (new Date(reply.created_at).getTime() > effectiveCheckedAtMs) {
+            useNewCommentsStore.getState().markNew(reply.signal_talk_id, reply.id);
+          }
+        });
+      });
+    });
+  }, [commentResponse.data, selectedChat?.id]);
+
   // 목록 카드/댓글·대댓글의 NEW 표시 clear는 useSignalHandler의 setSelectedChat에서
   // 상세방을 나오는 실제 액션(다른 시그널로 전환/패널 닫기)에 맞춰 처리한다.
 
@@ -421,7 +451,7 @@ export const useCommentHandler = ({ selectedChat }: { selectedChat: ChatMessage 
     isFetching: commentResponse.isLoading || isManualRefetching,
     selectedUser,
     commentList: commentResponse.data?.pages.flatMap((page) => page.results) || [],
-    commentCount: commentResponse.data?.pages?.[0]?.count || 0,
+    commentCount: commentResponse.data?.pages?.[0]?.total_comment_count || 0,
     commentObserverRef,
     scrollContainerRef,
     blockDialogOpen,

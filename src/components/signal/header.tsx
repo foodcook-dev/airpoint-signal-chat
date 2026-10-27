@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import logoPng from '@/assets/images/app_logo.png';
-import { useQuery } from '@tanstack/react-query';
-import { getActiveUserCount } from '@/api/signal';
+import { useQuery, useQueryClient, useMutation, useInfiniteQuery } from '@tanstack/react-query';
+import { getActiveUserCount, getUnreadComments, postReadComments } from '@/api/signal';
 import { Crown, Users, Bell } from 'lucide-react';
 import { cn } from '@/libs/auth';
 import { Button } from '@/components/ui/button';
 import NewCommentsPopover from '@/components/modules/new-comments-popover';
 import { ThemeToggle } from '@/components/modules/theme-toggle';
 import { SIGNAL_CHANNELS } from '@/constants/signal';
-import type { SignalChannel } from '@/types/signal';
+import useNewCommentsStore from '@/stores/new-comments';
+import type { SignalChannel, UnreadComment } from '@/types/signal';
 
-// TODO: API 연동 전 시안 — 실제로는 서버에서 마지막 확인 시점 이후 신규 댓글 수를 내려줘야 함
-const MOCK_NEW_COMMENT_COUNT = 5;
+const UNREAD_COMMENTS_QUERY_KEY = (audience: 'paid' | 'free') => ['unread-comments', audience];
 
 function ChannelTab({ channel, isActive }: { channel: SignalChannel; isActive: boolean }) {
   const config = SIGNAL_CHANNELS[channel];
@@ -54,11 +54,62 @@ function ChannelTab({ channel, isActive }: { channel: SignalChannel; isActive: b
   );
 }
 
-export default function Header({ channel }: { channel: SignalChannel }) {
+export default function Header({
+  channel,
+  onOpenSignalThread,
+  isOpeningSignalThread = false,
+}: {
+  channel: SignalChannel;
+  onOpenSignalThread: (signalTalkId: number) => void;
+  isOpeningSignalThread?: boolean;
+}) {
   const channelConfig = SIGNAL_CHANNELS[channel];
   const [newCommentsOpen, setNewCommentsOpen] = useState(false);
-  // "모두 확인" 버튼을 눌러야 비워짐 (목업 — 실제로는 서버에 확인 처리를 기록해야 함)
-  const [newCommentCount, setNewCommentCount] = useState(MOCK_NEW_COMMENT_COUNT);
+  const queryClient = useQueryClient();
+
+  // 유료 채널은 audience=paid, 무료 채널은 audience=free로 조회
+  const audience = channel === 'premium' ? 'paid' : 'free';
+
+  // update_comment_count 소켓 이벤트가 오면 socket-provider가 이 쿼리를 invalidate해서
+  // 새로 받아온다 — 여기서는 폴링하지 않는다.
+  const unreadCommentsResponse = useInfiniteQuery({
+    queryKey: UNREAD_COMMENTS_QUERY_KEY(audience),
+    queryFn: ({ pageParam = 1 }) => getUnreadComments({ audience, page: pageParam as number }),
+    getNextPageParam: (lastPage, pages) => {
+      if (lastPage.next) return pages.length + 1;
+      return undefined;
+    },
+    initialPageParam: 1,
+  });
+
+  const newCommentList =
+    unreadCommentsResponse.data?.pages.flatMap((page) => page.results) ?? [];
+  const newCommentCount = unreadCommentsResponse.data?.pages?.[0]?.count ?? 0;
+
+  // 댓글/대댓글 클릭 — 팝오버를 닫고 해당 시그널의 상세패널로 진입한다
+  const handleCommentClick = (comment: UnreadComment) => {
+    setNewCommentsOpen(false);
+    onOpenSignalThread(comment.signal_talk_id);
+  };
+
+  // "모두 확인" — 현재 목록에 있는 시그널들의 댓글을 모두 읽음 처리한 뒤 목록을 새로 받아온다.
+  // has_new/last_checked_at 동기화는 켜는 것만 하고 끄지는 않으므로(소켓이 먼저 켠 상태를 API가
+  // 늦게 따라와서 덮어쓰는 레이스 방지), 시그널 목록 카드의 NEW 뱃지는 여기서 직접
+  // clearSignalNew/clearSignal로 꺼줘야 한다 — setSelectedChat에서 패널을 나갈 때와 같은 패턴.
+  const { mutateAsync: markAllReadRequest, isPending: isMarkingAllRead } = useMutation({
+    mutationFn: async () => {
+      const signalTalkIds = [...new Set(newCommentList.map((comment) => comment.signal_talk_id))];
+      await Promise.all(signalTalkIds.map((signalTalkId) => postReadComments({ signalTalkId })));
+      return signalTalkIds;
+    },
+    onSuccess: (signalTalkIds) => {
+      signalTalkIds.forEach((signalTalkId) => {
+        useNewCommentsStore.getState().clearSignalNew(signalTalkId);
+        useNewCommentsStore.getState().clearSignal(signalTalkId);
+      });
+      queryClient.invalidateQueries({ queryKey: UNREAD_COMMENTS_QUERY_KEY(audience) });
+    },
+  });
 
   return (
     <div className="bg-background border-border flex h-16 flex-shrink-0 items-stretch justify-between gap-4 border-b px-4">
@@ -91,8 +142,16 @@ export default function Header({ channel }: { channel: SignalChannel }) {
         <NewCommentsPopover
           open={newCommentsOpen}
           onOpenChange={setNewCommentsOpen}
+          comments={newCommentList}
           unreadCount={newCommentCount}
-          onMarkAllRead={() => setNewCommentCount(0)}
+          isLoading={unreadCommentsResponse.isLoading}
+          hasNextPage={!!unreadCommentsResponse.hasNextPage}
+          isFetchingNextPage={unreadCommentsResponse.isFetchingNextPage}
+          onLoadMore={unreadCommentsResponse.fetchNextPage}
+          onMarkAllRead={() => markAllReadRequest()}
+          isMarkingAllRead={isMarkingAllRead}
+          onCommentClick={handleCommentClick}
+          isOpeningThread={isOpeningSignalThread}
         >
           <Button
             variant="ghost"
@@ -108,7 +167,7 @@ export default function Header({ channel }: { channel: SignalChannel }) {
                     channelConfig.badgeClass,
                   )}
                 >
-                  {newCommentCount > 9 ? '9+' : newCommentCount}
+                  {newCommentCount > 99 ? '99+' : newCommentCount}
                 </span>
               )}
             </span>

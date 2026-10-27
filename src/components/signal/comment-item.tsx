@@ -203,6 +203,7 @@ export default function CommentItem({
               key={reply.id}
               reply={reply}
               commentId={id}
+              isMainCommentDeleted={!!deleted_at}
               isReplyComposerOpenForThread={isReplyComposerOpenForThread}
               onStartEditReply={onStartEditReply}
               onDisableComment={onDisableComment}

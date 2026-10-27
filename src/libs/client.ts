@@ -10,7 +10,7 @@ const API = axios.create({
 // TODO: 로그인 연동 전까지 임시로 고정된 관리자 토큰을 사용 — 소켓 연결(socket-provider.tsx)도
 // 같은 백엔드를 쓰므로 반드시 이 토큰을 그대로 가져다 써야 핸드셰이크가 거부되지 않는다.
 export const ADMIN_DEBUG_TOKEN =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkyNzUyNDEzLCJpYXQiOjE3OTI3MTY0MTMsImp0aSI6ImY0MDMxMzYwZGY4OTQ4MTg4MTFlYzdjYjY2M2Q1MWM4IiwidXNlcm5hbWUiOjF9.zLTX7Fhc_mg9Rkw90rmGgp9D1YoFa6ZwGQlZJtw-N-w';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzMDkyNjIwLCJpYXQiOjE3OTMwNTY2MjAsImp0aSI6IjlhMGRjZDJkODIwNDQ4NjBiOTU4NjQ2OTZhZGNlOThlIiwidXNlcm5hbWUiOjF9.cGD2AHePK5_D-MosBaPVPHxLlXSaF4Di-s4CgnGGayM';
 
 API.interceptors.request.use(
   (config) => {

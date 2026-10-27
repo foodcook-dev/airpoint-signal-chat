@@ -11,6 +11,7 @@ export interface ChatMessage {
   message_with_html: string;
   created_at: string;
   is_notice: boolean;
+  has_new: boolean;
   og_tags: Array<{
     og_image: string;
     og_title: string;
@@ -85,10 +86,9 @@ export interface SignalReactionUpdateEvent {
 }
 
 // 소켓 'update_comment_count' 이벤트 페이로드 — 해당 시그널의 댓글이 생성/삭제될 때마다 하나씩 온다.
-// 실제 필드명은 comment_count가 아니라 v2_comment_count다 (실시간 payload로 직접 확인함).
 export interface SignalCommentCountUpdateEvent {
   signal_talk_id: number;
-  v2_comment_count: number;
+  admin_comment_count: number;
 }
 
 // 소켓 'create_signal_talk_comment' / 'update_signal_talk_comment' / 'delete_signal_talk_comment'
@@ -163,9 +163,33 @@ export interface ChatFormData {
 }
 
 export interface CommentResponse {
-  count: number;
+  total_comment_count: number;
   next: string;
+  last_checked_at: string;
   results: Comment[];
 }
 
 export type SignalChannel = 'premium' | 'free';
+
+// 새 댓글
+export interface UnreadComment {
+  id: number;
+  signal_talk_id: number;
+  signal_talk_message: number;
+  user_id: number;
+  username: string;
+  nickname: string;
+  is_admin_author: boolean;
+  message: string;
+  main_comment_id: number;
+  reply_to_id: null | number;
+  tag_nickname: string | null;
+  created_at: string;
+}
+
+// 새 댓글 Response
+export interface UnreadCommentResponse {
+  count: number;
+  next: string;
+  results: UnreadComment[];
+}

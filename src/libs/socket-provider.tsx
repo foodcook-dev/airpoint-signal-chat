@@ -186,13 +186,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       });
     });
 
-    // 시그널 댓글 수 변경 — 목록(메시지 버블)의 comment_count만 patch한다. 상세 댓글 패널의
-    // 실제 내용은 create/update/delete 이벤트가 각각 직접 patch하므로 여기서는 손대지 않는다.
-    // NEW 표시도 여기서 같이 켠다 — create_signal_talk_comment는 그 시그널 방(join_room)에
-    // 들어가 있어야만(=패널을 연 적 있어야만) 오는데, 이 이벤트는 목록 구독(join_v2_signal_talk_list)
-    // 만으로도 항상 오기 때문에 패널을 안 열어본 시그널의 신규 댓글은 이 카운트 증가로만 감지할 수 있다.
+    // 시그널 댓글 수 변경
     socket.on('update_comment_count', (payload: SignalCommentCountUpdateEvent) => {
-      const { signal_talk_id, v2_comment_count } = payload;
+      const { signal_talk_id, admin_comment_count } = payload;
 
       queryClient.setQueriesData<InfiniteData<ChatResponse>>({ queryKey: ['signal'] }, (old) => {
         if (!old) return old;
@@ -202,19 +198,20 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             ...page,
             results: page.results.map((msg) => {
               if (String(msg.id) !== String(signal_talk_id)) return msg;
-              if (v2_comment_count > msg.comment_count) {
+              if (admin_comment_count > msg.comment_count) {
                 useNewCommentsStore.getState().markSignalNew(signal_talk_id);
               }
-              return { ...msg, comment_count: v2_comment_count };
+              return { ...msg, comment_count: admin_comment_count };
             }),
           })),
         };
       });
+
+      // 헤더의 "새 댓글" 목록/카운트는 폴링하지 않고 이 이벤트를 받을 때만 서버에서 새로 받아온다
+      queryClient.invalidateQueries({ queryKey: ['unread-comments'] });
     });
 
-    // 댓글 생성 — main_comment_id가 있으면 대댓글(원댓글의 replies에 추가), 없으면 최상위
-    // 댓글(마지막으로 불러온 페이지 끝에 추가 + count 증가)로 캐시를 직접 patch한다.
-    // 관리자 차단 여부와 무관하게 전부 노출한다 — 관리자는 숨기지 말고 봐야 모더레이션이 가능하다.
+    // 댓글 생성
     socket.on(
       'create_signal_talk_comment',
       (payload: SignalCommentEvent | SignalCommentEvent[]) => {
@@ -253,7 +250,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             ...old,
             pages: pages.map((page, i) => ({
               ...page,
-              count: page.count + 1,
+              count: page.total_comment_count + 1,
               results:
                 i === pages.length - 1 ? [...page.results, toComment(comment)] : page.results,
             })),
@@ -262,7 +259,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       },
     );
 
-    // 댓글/대댓글 수정 — id로 찾아 message/images/is_edited만 덮어쓴다 (정렬 위치는 그대로)
+    // 댓글/대댓글 수정
     socket.on(
       'update_signal_talk_comment',
       (payload: SignalCommentEvent | SignalCommentEvent[]) => {
@@ -304,8 +301,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       },
     );
 
-    // 댓글/대댓글 삭제 — 목록에서 지우지 않고 deleted_at만 세운다. 관리자 화면은 삭제된 댓글도
-    // "삭제됨" 표시로 계속 보여주는 모더레이션 UI라서, 실제로 지워버리는 대신 상태만 바꾼다.
+    // 댓글/대댓글 삭제
     socket.on(
       'delete_signal_talk_comment',
       (payload: SignalCommentEvent | SignalCommentEvent[]) => {
