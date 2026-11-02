@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query';
 import { PATH } from '@/constants/api-path';
-import { ADMIN_DEBUG_TOKEN } from '@/libs/client';
+import { getAuthToken } from '@/libs/client';
 import useNewCommentsStore from '@/stores/new-comments';
 import type {
   ChatResponse,
@@ -132,7 +132,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       timeout: 10000,
       autoConnect: true,
       auth: {
-        token: `Bearer ${ADMIN_DEBUG_TOKEN}`,
+        token: `Bearer ${getAuthToken()}`,
         socket_protocol_version: 2,
       },
     });
@@ -145,12 +145,12 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       // 재연결이면 끊기기 전에 보고 있던 방을 다시 들어간다 (나가기는 필요 없음 — 새 연결이라 서버엔 남아있지 않음)
       if (audienceRef.current) {
         socket.emit('join_v2_signal_talk_list', {
-          token: ADMIN_DEBUG_TOKEN,
+          token: getAuthToken(),
           audience: audienceRef.current,
         });
       }
       if (roomIdRef.current != null) {
-        socket.emit('join_room', { token: ADMIN_DEBUG_TOKEN, signal_talk_id: roomIdRef.current });
+        socket.emit('join_room', { token: getAuthToken(), signal_talk_id: roomIdRef.current });
       }
     });
 
@@ -356,11 +356,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     if (prevAudience) {
       socket.emit('leave_v2_signal_talk_list', {
-        token: ADMIN_DEBUG_TOKEN,
+        token: getAuthToken(),
         audience: prevAudience,
       });
     }
-    socket.emit('join_v2_signal_talk_list', { token: ADMIN_DEBUG_TOKEN, audience });
+    socket.emit('join_v2_signal_talk_list', { token: getAuthToken(), audience });
   };
 
   // 댓글 상세방 입장 — 목록방은 건드리지 않는다
@@ -368,7 +368,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     roomIdRef.current = signalTalkId;
     if (socketRef.current?.connected) {
       socketRef.current.emit('join_room', {
-        token: ADMIN_DEBUG_TOKEN,
+        token: getAuthToken(),
         signal_talk_id: signalTalkId,
       });
     }
@@ -379,7 +379,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     if (roomIdRef.current === signalTalkId) roomIdRef.current = null;
     if (socketRef.current?.connected) {
       socketRef.current.emit('leave_room', {
-        token: ADMIN_DEBUG_TOKEN,
+        token: getAuthToken(),
         signal_talk_id: signalTalkId,
       });
     }
