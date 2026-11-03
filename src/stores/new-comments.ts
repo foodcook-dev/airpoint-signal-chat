@@ -2,18 +2,17 @@ import { create } from 'zustand';
 
 interface NewCommentsState {
   newIdsBySignal: Record<string, Set<number>>;
-  newSignalIds: Set<string>;
+  readCommentCountBySignal: Record<string, number>;
   locallyReadAtBySignal: Record<string, number>;
   markNew: (signalTalkId: number | string, id: number) => void;
   clearSignal: (signalTalkId: number | string) => void;
-  markSignalNew: (signalTalkId: number | string) => void;
-  clearSignalNew: (signalTalkId: number | string) => void;
+  markReadAtCount: (signalTalkId: number | string, count: number) => void;
   markLocallyReadNow: (signalTalkId: number | string) => void;
 }
 
 const useNewCommentsStore = create<NewCommentsState>((set) => ({
   newIdsBySignal: {},
-  newSignalIds: new Set(),
+  readCommentCountBySignal: {},
   locallyReadAtBySignal: {},
   // 댓글/대댓글 개별 NEW — 패널을 닫거나(혹은 다른 시그널로 전환) clearSignal로 그 시그널 몫만 지운다
   markNew: (signalTalkId, id) =>
@@ -33,22 +32,14 @@ const useNewCommentsStore = create<NewCommentsState>((set) => ({
       delete rest[key];
       return { newIdsBySignal: rest };
     }),
-  // 시그널 목록 카드의 NEW — 그 시그널의 댓글 패널을 열면 clearSignalNew로 끈다
-  markSignalNew: (signalTalkId) =>
+  markReadAtCount: (signalTalkId, count) =>
     set((state) => {
       const key = String(signalTalkId);
-      if (state.newSignalIds.has(key)) return state;
-      const next = new Set(state.newSignalIds);
-      next.add(key);
-      return { newSignalIds: next };
-    }),
-  clearSignalNew: (signalTalkId) =>
-    set((state) => {
-      const key = String(signalTalkId);
-      if (!state.newSignalIds.has(key)) return state;
-      const next = new Set(state.newSignalIds);
-      next.delete(key);
-      return { newSignalIds: next };
+      const prevCount = state.readCommentCountBySignal[key] ?? 0;
+      if (count <= prevCount) return state;
+      return {
+        readCommentCountBySignal: { ...state.readCommentCountBySignal, [key]: count },
+      };
     }),
   markLocallyReadNow: (signalTalkId) =>
     set((state) => ({

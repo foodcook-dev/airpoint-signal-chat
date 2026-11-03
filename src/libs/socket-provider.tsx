@@ -196,13 +196,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           ...old,
           pages: old.pages.map((page) => ({
             ...page,
-            results: page.results.map((msg) => {
-              if (String(msg.id) !== String(signal_talk_id)) return msg;
-              if (admin_comment_count > msg.comment_count) {
-                useNewCommentsStore.getState().markSignalNew(signal_talk_id);
-              }
-              return { ...msg, comment_count: admin_comment_count };
-            }),
+            results: page.results.map((msg) =>
+              String(msg.id) === String(signal_talk_id)
+                ? { ...msg, comment_count: admin_comment_count }
+                : msg,
+            ),
           })),
         };
       });
@@ -218,9 +216,6 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         const comment = firstOf(payload);
         if (!comment) return;
 
-        // hasNewComment/isNew 둘 다 캐시가 아니라 별도 스토어에 — refetch나 onAny의 전체
-        // invalidate로 목록이 서버 데이터로 통째로 교체돼도(댓글 작성, 무관한 다른 이벤트 등) 안 지워지게 한다
-        useNewCommentsStore.getState().markSignalNew(comment.signal_talk_id);
         useNewCommentsStore.getState().markNew(comment.signal_talk_id, comment.id);
 
         patchCommentThread(queryClient, comment.signal_talk_id, (old) => {

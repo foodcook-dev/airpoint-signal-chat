@@ -41,7 +41,11 @@ export default function SignalMessage({
     poll_notification,
     reactions,
   } = chat;
-  const hasNewComment = useNewCommentsStore((state) => state.newSignalIds.has(String(id)));
+
+  const readCommentCount = useNewCommentsStore(
+    (state) => state.readCommentCountBySignal[String(id)],
+  );
+  const hasNewComment = comment_count > (readCommentCount ?? 0);
 
   const handleClickCommentCount = () => onOpenThread?.(chat);
 

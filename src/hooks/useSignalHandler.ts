@@ -8,6 +8,7 @@ import {
   postReadComments,
 } from '@/api/signal';
 import { useSocket } from '@/libs/socket-provider';
+import { getAuthToken } from '@/libs/client';
 import { PATH } from '@/constants/api-path';
 import useAlertStore from '@/stores/alert';
 import useConfirmStore from '@/stores/confirm';
@@ -59,13 +60,40 @@ export const useSignalHandler = (channel: SignalChannel) => {
     return () => leaveRoom(signalTalkId);
   }, [selectedChatId]);
 
+  useEffect(() => {
+    const handlePageHide = () => {
+      if (!selectedChatId) return;
+      const token = getAuthToken();
+      if (!token) return;
+      fetch(`${PATH.base}/v2/signal_talks/comments/admin/read/`, {
+        method: 'POST',
+        keepalive: true,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ signal_talk_id: Number(selectedChatId) }),
+      }).catch(() => {});
+    };
+    window.addEventListener('pagehide', handlePageHide);
+    return () => window.removeEventListener('pagehide', handlePageHide);
+  }, [selectedChatId]);
+
   const queryClient = useQueryClient();
   const signalQueryKey = ['signal', channel];
 
   const signalResponse = useInfiniteQuery<ChatResponse>({
     queryKey: signalQueryKey,
-    queryFn: ({ pageParam = 1 }) =>
-      getSignalTalksAdmin({ audience, page: pageParam as number, pageSize: 10 }),
+    queryFn: async ({ pageParam = 1 }) => {
+      const data = await getSignalTalksAdmin({ audience, page: pageParam as number, pageSize: 10 });
+
+      data.results.forEach((msg) => {
+        if (!msg.has_new) {
+          useNewCommentsStore.getState().markReadAtCount(msg.id, msg.comment_count);
+        }
+      });
+      return data;
+    },
     getNextPageParam: (lastPage, pages) => {
       if (lastPage.next) return pages.length + 1;
       return undefined;
@@ -300,37 +328,17 @@ export const useSignalHandler = (channel: SignalChannel) => {
   const messageList = signalResponse.data?.pages.flatMap((page) => page.results) || [];
   const selectedChat = messageList.find((msg) => msg.id === selectedChatId) || null;
 
-  // 최초 진입이나 새로고침 직후엔 아직 소켓 이벤트가 쌓이지 않았으므로, 목록 API가 내려주는
-  // has_new로 NEW 뱃지 상태를 동기화한다. signalResponse.data가 바뀔 때마다(최초 로드, 과거
-  // 페이지 추가 로드, 소켓발 invalidate로 인한 refetch 등) 다시 동기화된다 — 이미 markSignalNew로
-  // 켜져 있으면 no-op이라 소켓으로 먼저 켜진 상태를 덮어쓰지 않는다.
-  useEffect(() => {
-    signalResponse.data?.pages.forEach((page) => {
-      page.results.forEach((msg) => {
-        if (msg.has_new) {
-          useNewCommentsStore.getState().markSignalNew(msg.id);
-        }
-      });
-    });
-  }, [signalResponse.data]);
-
-  // 상세방을 나올 때(다른 시그널로 바꾸거나 패널을 닫을 때)만 그 시그널의 NEW 표시를 지운다 —
-  // 패널을 열어두고 보는 동안에는 계속 떠 있어야 한다. useEffect cleanup으로 하면 StrictMode의
-  // 개발 모드 mount→cleanup→mount 시뮬레이션 때문에 패널을 여는 순간 지워져버려서, 실제 "닫기"
-  // 액션(이 함수 호출)에 직접 걸어야 한다.
   const setSelectedChat = (chat: ChatMessage | null) => {
     setSelectedChatId((prevId) => {
       const nextId = chat?.id ?? null;
       if (prevId && prevId !== nextId) {
-        useNewCommentsStore.getState().clearSignalNew(prevId);
+        const prevChat = messageList.find((msg) => msg.id === prevId);
+        if (prevChat) {
+          useNewCommentsStore.getState().markReadAtCount(prevId, prevChat.comment_count);
+        }
         useNewCommentsStore.getState().clearSignal(prevId);
-        // postReadComments는 await 없이 fire-and-forget이라, 서버 last_checked_at이 갱신되기
-        // 전에 같은 시그널을 바로 재진입하면 NEW가 레이스로 다시 붙을 수 있다 — 그래서 "방금
-        // 여기까지는 확인했다"는 로컬 타임스탬프를 같이 남겨서 useCommentHandler가 서버값과
-        // 비교할 때 이 값도 함께 고려하게 한다.
+
         useNewCommentsStore.getState().markLocallyReadNow(prevId);
-        // 읽음 처리가 서버에 실제로 반영된 뒤에 헤더의 "새 댓글" 목록/카운트를 다시 불러온다 —
-        // 응답을 기다리지 않고 바로 invalidate하면 아직 감소 전인 카운트를 다시 받아올 수 있다.
         postReadComments({ signalTalkId: Number(prevId) })
           .then(() => {
             queryClient.invalidateQueries({ queryKey: ['unread-comments'] });

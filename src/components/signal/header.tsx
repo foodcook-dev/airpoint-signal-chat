@@ -1,7 +1,13 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import logoPng from '@/assets/images/app_logo.png';
-import { useQuery, useQueryClient, useMutation, useInfiniteQuery } from '@tanstack/react-query';
+import {
+  useQuery,
+  useQueryClient,
+  useMutation,
+  useInfiniteQuery,
+  InfiniteData,
+} from '@tanstack/react-query';
 import { getActiveUserCount, getUnreadComments, postReadComments } from '@/api/signal';
 import { Crown, Users, Bell } from 'lucide-react';
 import { cn } from '@/libs/auth';
@@ -10,11 +16,19 @@ import NewCommentsPopover from '@/components/modules/new-comments-popover';
 // import { ThemeToggle } from '@/components/modules/theme-toggle';
 import { SIGNAL_CHANNELS } from '@/constants/signal';
 import useNewCommentsStore from '@/stores/new-comments';
-import type { SignalChannel, UnreadComment } from '@/types/signal';
+import type { ChatResponse, SignalChannel, UnreadComment } from '@/types/signal';
 
 const UNREAD_COMMENTS_QUERY_KEY = (audience: 'paid' | 'free') => ['unread-comments', audience];
 
-function ChannelTab({ channel, isActive }: { channel: SignalChannel; isActive: boolean }) {
+function ChannelTab({
+  channel,
+  isActive,
+  onBeforeSwitch,
+}: {
+  channel: SignalChannel;
+  isActive: boolean;
+  onBeforeSwitch?: () => void;
+}) {
   const config = SIGNAL_CHANNELS[channel];
 
   // TODO: 채널별 API가 준비되면 channel 값을 요청에 반영 (현재는 두 채널 모두 동일 API 사용)
@@ -27,6 +41,9 @@ function ChannelTab({ channel, isActive }: { channel: SignalChannel; isActive: b
   return (
     <NavLink
       to={`/chat/${channel}`}
+      onClick={() => {
+        if (!isActive) onBeforeSwitch?.();
+      }}
       className={cn(
         'relative flex h-full items-center gap-2 px-2 text-sm font-semibold whitespace-nowrap transition-colors',
         isActive ? config.tabTextClass : 'text-contrast/50 hover:text-contrast/80',
@@ -58,10 +75,12 @@ export default function Header({
   channel,
   onOpenSignalThread,
   isOpeningSignalThread = false,
+  onBeforeChannelSwitch,
 }: {
   channel: SignalChannel;
   onOpenSignalThread: (signalTalkId: number) => void;
   isOpeningSignalThread?: boolean;
+  onBeforeChannelSwitch?: () => void;
 }) {
   const channelConfig = SIGNAL_CHANNELS[channel];
   const [newCommentsOpen, setNewCommentsOpen] = useState(false);
@@ -91,10 +110,6 @@ export default function Header({
     onOpenSignalThread(comment.signal_talk_id);
   };
 
-  // "모두 확인" — 현재 목록에 있는 시그널들의 댓글을 모두 읽음 처리한 뒤 목록을 새로 받아온다.
-  // has_new/last_checked_at 동기화는 켜는 것만 하고 끄지는 않으므로(소켓이 먼저 켠 상태를 API가
-  // 늦게 따라와서 덮어쓰는 레이스 방지), 시그널 목록 카드의 NEW 뱃지는 여기서 직접
-  // clearSignalNew/clearSignal로 꺼줘야 한다 — setSelectedChat에서 패널을 나갈 때와 같은 패턴.
   const { mutateAsync: markAllReadRequest, isPending: isMarkingAllRead } = useMutation({
     mutationFn: async () => {
       const signalTalkIds = [...new Set(newCommentList.map((comment) => comment.signal_talk_id))];
@@ -102,8 +117,20 @@ export default function Header({
       return signalTalkIds;
     },
     onSuccess: (signalTalkIds) => {
+      const signalListData = queryClient.getQueryData<InfiniteData<ChatResponse>>([
+        'signal',
+        channel,
+      ]);
+      const commentCountById = new Map(
+        signalListData?.pages
+          .flatMap((page) => page.results)
+          .map((msg) => [msg.id, msg.comment_count]) ?? [],
+      );
       signalTalkIds.forEach((signalTalkId) => {
-        useNewCommentsStore.getState().clearSignalNew(signalTalkId);
+        const commentCount = commentCountById.get(String(signalTalkId));
+        if (commentCount != null) {
+          useNewCommentsStore.getState().markReadAtCount(signalTalkId, commentCount);
+        }
         useNewCommentsStore.getState().clearSignal(signalTalkId);
       });
       queryClient.invalidateQueries({ queryKey: UNREAD_COMMENTS_QUERY_KEY(audience) });
@@ -129,7 +156,12 @@ export default function Header({
 
         <nav className="border-border flex items-stretch gap-2 pl-6">
           {(Object.keys(SIGNAL_CHANNELS) as SignalChannel[]).map((key) => (
-            <ChannelTab key={key} channel={key} isActive={key === channel} />
+            <ChannelTab
+              key={key}
+              channel={key}
+              isActive={key === channel}
+              onBeforeSwitch={onBeforeChannelSwitch}
+            />
           ))}
         </nav>
       </div>

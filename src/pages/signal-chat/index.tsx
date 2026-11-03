@@ -63,6 +63,7 @@ export default function SignalChat({ channel }: { channel: SignalChannel }) {
           channel={channel}
           onOpenSignalThread={handleOpenSignalThread}
           isOpeningSignalThread={isOpeningSignalThread}
+          onBeforeChannelSwitch={handleCloseThread}
         />
 
         <ChatMessageList

@@ -7,9 +7,9 @@ const API = axios.create({
   baseURL: PATH.base,
 });
 
-// 외부 링크로 직접 접속(iframe 밖)했을 때만 쓰는 임시 관리자 토큰
+// 로컬서버 실행시 사용할 임시 관리자 토큰
 export const ADMIN_DEBUG_TOKEN =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzMDkyNjIwLCJpYXQiOjE3OTMwNTY2MjAsImp0aSI6IjlhMGRjZDJkODIwNDQ4NjBiOTU4NjQ2OTZhZGNlOThlIiwidXNlcm5hbWUiOjF9.cGD2AHePK5_D-MosBaPVPHxLlXSaF4Di-s4CgnGGayM';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzNzE3NzU3LCJpYXQiOjE3OTM2ODE3NTcsImp0aSI6Ijk1NjA5YmM1ZGI3MjQzNTA5OWI0OThkNGE5NjRjOTYyIiwidXNlcm5hbWUiOjF9.2vh8c4YckDiosMbbrqJDaT1PSD9I6iaEk_QEctLjXyo';
 
 // cross-origin 부모 프레임이면 window.top 접근 자체가 막힐 수 있어 예외도 iframe으로 본다
 function isInIframe(): boolean {
