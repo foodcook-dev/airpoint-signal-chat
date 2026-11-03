@@ -7,7 +7,7 @@ import { Crown, Users, Bell } from 'lucide-react';
 import { cn } from '@/libs/auth';
 import { Button } from '@/components/ui/button';
 import NewCommentsPopover from '@/components/modules/new-comments-popover';
-import { ThemeToggle } from '@/components/modules/theme-toggle';
+// import { ThemeToggle } from '@/components/modules/theme-toggle';
 import { SIGNAL_CHANNELS } from '@/constants/signal';
 import useNewCommentsStore from '@/stores/new-comments';
 import type { SignalChannel, UnreadComment } from '@/types/signal';
@@ -82,8 +82,7 @@ export default function Header({
     initialPageParam: 1,
   });
 
-  const newCommentList =
-    unreadCommentsResponse.data?.pages.flatMap((page) => page.results) ?? [];
+  const newCommentList = unreadCommentsResponse.data?.pages.flatMap((page) => page.results) ?? [];
   const newCommentCount = unreadCommentsResponse.data?.pages?.[0]?.count ?? 0;
 
   // 댓글/대댓글 클릭 — 팝오버를 닫고 해당 시그널의 상세패널로 진입한다
@@ -137,7 +136,7 @@ export default function Header({
 
       <div className="flex flex-shrink-0 items-center gap-3">
         {/* 개발 서버 확인용 다크/라이트 모드 토글 */}
-        <ThemeToggle />
+        {/* <ThemeToggle /> */}
 
         <NewCommentsPopover
           open={newCommentsOpen}
